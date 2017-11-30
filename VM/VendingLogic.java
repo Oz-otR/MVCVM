@@ -16,7 +16,7 @@ public class VendingLogic implements VendingLogicInterface {
 	private Timer timer2;
 	
 	private final double bitCoinExchangeRate = 12383.43;
-	private boolean enableBitCoin = true;
+	private boolean enableBitCoin =false;
 	private VendingBTChardware tempBTChardware; //We create a temporary hardware piece in lue of the actual hardware.
 	
 	public boolean displayWelcome;
