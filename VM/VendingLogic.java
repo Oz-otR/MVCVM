@@ -14,6 +14,11 @@ public class VendingLogic implements VendingLogicInterface {
 	private String currentMessage ="";
 	private Timer timer1;
 	private Timer timer2;
+	
+	private final double bitCoinExchangeRate = 12383.43;
+	private boolean enableBitCoin = true;
+	private VendingBTChardware tempBTChardware; //We create a temporary hardware piece in lue of the actual hardware.
+	
 	public boolean displayWelcome;
 	/**
 	*This constructor uses a vending machine as a parameter, then creates and assigns listeners to it.
@@ -30,6 +35,10 @@ public class VendingLogic implements VendingLogicInterface {
 		EL = new EventLog();
 		registerListeners();
 		
+		if(enableBitCoin) {
+			tempBTChardware = BitCoinListener.tempCreateHardware();
+		}
+		
 		//Set up the custom configuration
 		circuitEnabled = new Boolean[vm.getNumberOfSelectionButtons()];
 		for (int i = 0; i < circuitEnabled.length; i++) {
@@ -38,6 +47,50 @@ public class VendingLogic implements VendingLogicInterface {
 		this.welcomeMessageTimer();
 		
 	}
+	
+	/**
+	 * Method handles bitcoin transactions, using the temporary hardware
+	 * @param none
+	 * @return none
+	 */
+	public void bitcoinTransaction() {
+		
+		if(verifyBTCuser(tempBTChardware.getUserID()))
+		{
+			if(tempBTChardware.getBTCpaymentMethods().contains(tempBTChardware.getPaymentType())) {
+				
+				//Replace this with proper BTC payment protocol
+				//For now just give it to them as credit.
+				//TODO impliment handling for charging the user.
+				
+			}
+		}
+		
+		
+		
+		
+	}
+	
+	private boolean verifyBTCuser(int userID) {
+		//When the bitcoin system is created, replace this method with the user verifcation protocoll.
+		return true;
+	}
+	
+	public double convertCADtoBTC(int cad)
+	{
+		if (cad< 0) throw new IllegalStateException("Unable to convert negative CAD values");
+		
+		double caddouble = cad/100;
+		return caddouble/ bitCoinExchangeRate;
+	}
+	
+	public int convertBTCtoCAD(double btc)
+	{
+		if(btc < 0) throw new IllegalStateException("Unable to convert negative bitcoin values");
+		int cad = (int) Math.floor(btc*bitCoinExchangeRate);	
+		return cad;
+	}
+
 	
 	/**
 	* This method returns the event logger
@@ -74,8 +127,10 @@ public class VendingLogic implements VendingLogicInterface {
 		}
 		vm.getCoinReceptacle().register(new CoinReceptacleListenerDevice(this));
 		
-		//!!The current version of the vending machine is bugged. The coin return is never instantiated.!!
-		// This means we are unable to register to the coin return, as we get a null pointer.
+		if(enableBitCoin) {
+			tempBTChardware.register(new BitCoinListener(this));
+		}
+		
 		try {
 			vm.getCoinReturn().register(new CoinReturnListenerDevice(this));}
 		catch(Exception e)
@@ -172,24 +227,26 @@ public class VendingLogic implements VendingLogicInterface {
 	 * A method to display the price of the pop at a specific index 
 	 * @param index - the selection number that corresponds to the desired pop
 	 */
-	public void displayPrice(int index) {
-		try {
-			timer1.cancel();
-			timer2.cancel();
-		} catch (Exception e) {
-			// do nothing
+	
+
+		public void displayPrice(int index) {
+			try {
+				timer1.cancel();
+				timer2.cancel();
+			} catch (Exception e) {
+				// do nothing
+			}
+			vm.getDisplay().display("Price of " + vm.getPopKindName(index) + ": $" + (((double) vm.getPopKindCost(index)) / 100));
+			try {
+				if(!debug) Thread.sleep(5000);			// wait for 5 seconds
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			if (credit == 0)
+				welcomeMessageTimer();
+			else
+				this.displayCredit();
 		}
-		vm.getDisplay().display("Price of " + vm.getPopKindName(index) + ": $" + (((double) vm.getPopKindCost(index)) / 100));
-		try {
-			if(!debug) Thread.sleep(5000);			// wait for 5 seconds
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		if (credit == 0)
-			welcomeMessageTimer();
-		else
-			this.displayCredit();
-	}
 	
 	/**
 	 * Method to show that an invalid coin was inserted
@@ -541,7 +598,11 @@ public class VendingLogic implements VendingLogicInterface {
 	/**
 	 * Method returns the value in the circuitEnabled array at an index
 	 * @param int index, the index of the desired value
-	 * @return boolean circuitEnabled[index]
+	 * @retupublic void bitcoinTransaction() {
+		
+		
+		
+	}rn boolean circuitEnabled[index]
 	 */
 	public boolean getCircuitEnabledIndex(int index)
 	{
@@ -552,5 +613,7 @@ public class VendingLogic implements VendingLogicInterface {
 		else
 			return circuitEnabled[index];
 	}
+
+	
 	
 }
