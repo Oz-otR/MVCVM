@@ -1,0 +1,146 @@
+97-122 (a - z)
+48 - 57(0-9)
+
+pressButton('a')
+pressButton('^')
+
+
+pressButton()
+
+
+if(!mode1 && !mode2 && !mode3)
+	pressButton('a');
+	mode1 = true;
+	vm.getDisplay().display("Enter pop can rack");
+
+//rackSelectMode
+	pressButton(popCanRackIndex)
+		if(pressButton = "shift")
+			disableConfigurationMode();
+	vn.getConfigurationPanel().getEnterButton().press();
+	vm.getDisplay().display("Rack selected: " + popCanRackIndex + "\n Set price: ");	
+	boolean mode2 = true;
+
+//priceSelectMode
+
+	while (popPrice % 5 != 0)
+		pressButton(popPrice);
+		vn.getConfigurationPanel().getEnterButton().press();
+	vm.getDisplay().display("Rack selected: " + popCanRackIndex + "\n Price selected: " + popPrice + "\n Do you want to make these changes? press y for YES, n for NO");
+	pressButon('y') or pressButton('n');
+	if (yes)
+		saveChanges();
+
+	vm.getDisplay().display("Do you want to make any more changes? press y for YES, n for NO:");
+	if(yes)
+		mode1= true;
+	else
+		//Disable config mode(){
+			mode1 = false;
+			mode2 = false;
+			mode3 = false;
+		}
+
+
+selectionPrice;
+popCanRackIndex;
+displayMessage;
+
+
+
+
+pressButton(char button) //pressed button corresponding to the character passed into this method
+disableConfigMode()// sets all modes to false, set selectionPrice and popCanRackIndex to NULL
+
+//priceSelectMode
+boolean mode3 = true;
+
+pressButton(shift) = leaves configMode;
+
+
+
+
+
+buttonField;
+a,b,c
+
+
+
+
+if(pressedButton(enter)){
+
+
+	if(!mode1 && !mode2)		
+		if(buttonField = 'a')
+			enableConfigMode()//enable configmode/ set message to "enter pop can rack", set buttonField to null
+
+		else
+			buttonField = null;
+			System.out.println("invalid command!");
+ 
+	if(mode1 && !mode2)
+		if(buttonField != null)
+			try{
+				popCanRackIndex = Integer.parseInt(buttonField);
+				displayMessage += "\n Enter new Price";
+				mode2 = true;
+				buttonField = null;
+
+			}catch(Exception e){
+				displayMessage += "invalid selection, pop can rack index must be an integer!";
+				buttonField = null;
+			}
+
+
+	if(mode1 && mode2)
+		if(buttonField !=null)
+			newPrice = Integer.parseInt(buttonField);	
+
+
+
+}
+
+
+saveChanges(){
+
+	int[] popCosts = new int[vm.getNumberOfPopCanRacks()];
+	String[] popCanNames = new String[vm.getNumberOfPopCanRacks()];
+
+	for(int i = 0; i < popCosts.length; i++)
+		popCosts[i] = getPopKindCost(i);
+
+	for(int i = 0; i < popCosts.length; i++)
+		popCanNames = vm.getPopKindName(i);
+
+	popCosts[popCanRackIndex] = newPrice; //new price array
+	
+	vm.configure(popCanNames, popCosts); //popCanNames, popCanCosts
+	
+	
+	
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
