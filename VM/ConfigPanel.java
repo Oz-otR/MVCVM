@@ -9,7 +9,20 @@ import org.lsmr.vending.hardware.PushButtonListener;
 import org.lsmr.vending.hardware.VendingMachine;
 import java.util.ArrayList;
 
-
+/**
+ * This is a logic class for configuration panel in a Vending Machine. 
+ * The logic of this panel is based on 5 stages, each stage will be differentiate with others with the modes being true 
+ * or false. the first stage which all 4 modes are false is the disabled stage where the config panel will not work.
+ * By pressing 'a'+Enter, the config panel will go to the second stage which in that stage the config panel is enabled 
+ * and the technician can choose the rack number. The 3rd stage is choosing the price for the rack selected. 4th stage 
+ * is changing the name of the rack selected. and the 5th stage is saving the changes and disable the config panel, or 
+ * discarding the changes and go back to 2nd stage where the technician can choose the rack number.
+ * entering shift key will disable the config panel even in the middle of stages. the modes will be changed if the 
+ * Enter button is pressed, otherwise it stayes in the same mode and saves all the button pressed to the console 
+ * of the config panel. 
+ * @author Zia Rehman, Mahsa Lotfi
+ *
+ */
 public class ConfigPanel implements PushButtonListener, DisplayListener{
 	
 	public VendingMachine vm;	
@@ -29,7 +42,12 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	public String displayLog;
 	public String rackName;
 	
-
+	/**
+	 * Constructor to initialize vending machine and the configuration panel buttons. And registering listeners for 
+	 * those buttons. It will also initialize all the modes of config panel to be false so that the config panel will 
+	 * be disabled at first.
+	 * @param vmIn
+	 */
 	public ConfigPanel(VendingMachine vmIn){
 		
 		buttonList = new PushButton[38];		
@@ -53,15 +71,15 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 			buttonList[i].register(this);
 		
 		vm.getConfigurationPanel().getDisplay().register(this);
-		System.out.println("Constructor!");
 	}
 	
-	
+	/**
+	 * Method to change the button pressed ASCII char index to its related number index.
+	 * @param button
+	 */
 	public void pressButton(char button){
 		
 		int buttonIndex = (int) button;
-
-		System.out.println(buttonIndex);
 
 		
 		if(buttonIndex >= 97 && buttonIndex <= 122)		
@@ -81,6 +99,11 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		buttonList[buttonIndex].press();		
 	}
 	
+	/**
+	 * Method to change the button pressed index to its related ASCII character.
+	 * @param button, PushButton
+	 * @return buttonPushed, char
+	 */
 	public char buttonPressed(PushButton button){
 		
 		int buttonIndex = 0;
@@ -112,23 +135,23 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		// TODO Auto-generated method stub
 		
 	}
-
+	
+	/**
+	 * Method to react to every button press.
+	 * All the changes should be made with pressing related button plus Enter. The only button that does not
+	 * need the Enter button is the shift key which will disable the configuration panel. pressing any other button
+	 * without enter will just save that character and append it to the string showing in the console of config panel,
+	 * by pressing Enter all the string that has been saved in console will be saved as its related area.  
+	 * @param button
+	 */
 	@Override
 	public void pressed(PushButton button) {
-		
-		System.out.println("button Pressed: " + buttonPressed(button));
-		System.out.println(buttonField);
-		System.out.println(mode1);
-		System.out.println(mode2);
-		System.out.println(mode3);
 		
 		if(buttonPressed(button) == '+'){			
 			
 			if(!mode1 && !mode2 && !mode3 && !mode4){
 				if(buttonField != null){
-					System.out.println(buttonField);
 					if(buttonField.charAt(0) == 'a'){
-						System.out.println(buttonField);
 						enableConfigMode();
 					}
 					
@@ -235,6 +258,9 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		System.out.println("MODE3: " + mode3);
 	}
 	
+	/**
+	 * Method to save all the changes has been made by technician to the vending machine, and disabling the config panel.
+	 */
 	public void saveChanges(){
 		
 		ArrayList<Integer> popCanCosts = new ArrayList<Integer>();
@@ -251,21 +277,35 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		popCanNames.set(popCanRackIndex, rackName);
 		
 		vm.configure(popCanNames,popCanCosts);
+		
+		System.out.println("Pop Names: "+ popCanNames.toString());
+		System.out.println("Pop Costs: "+ popCanCosts);
+		
+		disableConfigMode();
+		
 	}
+	
+	/**
+	 * Method to display messages that every button press will initiate.
+	 * @param inMessage
+	 */
 	public void displayMessage(String inMessage){
 		
 		displayMessage += "\n" + inMessage;
 		display.display(displayMessage);
 	}
 	
+	/**
+	 * Method to enable the config mode, by setting mode1 to true
+	 */
 	public void enableConfigMode(){
-
-		System.out.println("Config Mode Enabled");
+		displayMessage = "Config Mode Enabled!";
+		display.display(displayMessage);
+		//System.out.println("Config Mode Enabled");
 		
 		mode1=true;
-		mode2=false;
 		
-		displayMessage = "\nSelect Pop Rack Number";
+		displayMessage += "\nSelect Pop Rack Number";
 		display.display(displayMessage);
 		
 		buttonField = "";
@@ -273,12 +313,15 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		
 	}
 	
+	/**
+	 * Method to disable config mode by setting all the modes to false.
+	 */
 	public void disableConfigMode(){
 		mode1=false;
 		mode2=false;
 		mode3=false;
 		mode4=false;
-		
+		display.display("Configuration Mode is disabled, to enable press 'a' then Enter");
 		
 	}
 
