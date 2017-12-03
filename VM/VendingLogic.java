@@ -93,71 +93,122 @@ public class VendingLogic implements VendingLogicInterface {
 		return cad;
 	}
 	
-	/* RYAN, Added Methods for checking a card, and then processing payment. Handles if there is already coins in the machine
-	and if only paying by card. Gives out messages to the display for most of the errors */
+		/*
+	 * RYAN, Added Methods for checking a card, and then processing payment. Handles
+	 * if there is already coins in the machine and if only paying by card. Gives
+	 * out messages to the display for most of the errors
+	 */
 	public void checkPayByCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException //index is the index of the button pressed 
 	{
-		if(cardEnabled)
-		{
-			if(Card.getAcceptedBanks().contains(card.getBankName()))
-			{
-				if (!(card.getCardType() == "Invalid")) //check if the card is Credit or Debit 
+		if (cardEnabled) {
+			if (Card.getAcceptedBanks().contains(card.getBankName())) {
+				if (!(card.getCardType() == "Invalid")) // check if the card is Credit or Debit
 				{
-				//Then the bank type can be used in the vending machine system
-					if(card.getCardBalance() > 0) //if the balance is more than 0, then go to try to pay with the card 
+					// Then the bank type can be used in the vending machine system
+					if (card.getCardBalance() > 0) // if the balance is more than 0, then go to try to pay with the card
 					{
-						vm.getDisplay().display("Paying with " + card.getBankName() + " " + card.getCardType() + " card");
-						payByCard(card, index); //message of what type of card they are paying with, then proceeds to pay with that card 
+						vm.getDisplay()
+								.display("Paying with " + card.getBankName() + " " + card.getCardType() + " card");
+						payByCard(card, index); // message of what type of card they are paying with, then proceeds to
+												// pay with that card
 					}
 				}
 			}
 			vm.getDisplay().display("Card not valid");
-		}
-		else
-		{
-			vm.getDisplay().display("Credit or debit cards are not accepted"); //if the cardEnabled is turned off 
+		} else {
+			vm.getDisplay().display("Credit or debit cards are not accepted"); // if the cardEnabled is turned off
 		}
 	}
-	
-	public void payByCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException
-	{
+
+	public void payByCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException {
 		double price = (double) vm.getPopKindCost(index) / 100;
-		double funds = card.getCardBalance(); //total funds on that card 
+		double funds = card.getCardBalance(); // total funds on that card
 		double thisCredit = (double) credit / 100;
-		if (credit > 0) //if there are coins in the machine 
+		if (credit > 0) // if there are coins in the machine
 		{
-			price = price - thisCredit; //subtracts the coins which are already in the machine from the price
+			price = price - thisCredit; // subtracts the coins which are already in the machine from the price
 			System.out.println(funds);
 			System.out.println(price);
-			if (funds < price)
-			{
+			if (funds < price) {
 				vm.getDisplay().display("Card has insufficient funds");
-				price = price + thisCredit; //set the price back to normal 
-			}
-			else 
-			{
-				funds = funds - price; //subtract the price payed from the funds of the card 
-				card.setNewBalance(funds); //set new the balance of the card after purchase 
+				price = price + thisCredit; // set the price back to normal
+				purchasedByCard(true, card);
+			} else {
+				funds = funds - price; // subtract the price payed from the funds of the card
+				card.setNewBalance(funds); // set new the balance of the card after purchase
 				credit = 0;
 				vm.getPopCanRack(index).dispensePopCan();
+				purchasedByCard(true, card);
 			}
-		}
-		else //credit is 0, no coins are in the machine, pay only by card 
+		} else // credit is 0, no coins are in the machine, pay only by card
 		{
-			if (card.getCardBalance() >= price)
-			{
+			if (card.getCardBalance() >= price) {
 				funds = funds - price;
 				card.setNewBalance(funds);
 				credit = 0;
 				vm.getPopCanRack(index).dispensePopCan();
-			}
-			else 
+				purchasedByCard(false, card);
+			} else {
 				vm.getDisplay().display("Card has insufficient funds");
+				purchasedByCard(false, card);
+			}
+
+		}
+
+	}
+	/* END */
+
+	/*
+	 * Cynthia: Created new methods to: enable and disable card acceptor pay by
+	 * tapping, wiping and inserting card and return card
+	 */
+	private CardAcceptor cardAcceptor; // Notice: this card acceptor has not been installed into the vending machine.
+	private boolean purchaseSucceeded = false;	//A flag announcing whether the purchase is successful or not. In case it'll be needed in the future.
+	
+	public VendingMachine getVm() {
+		return this.vm;
+	}
+	public void enableCardAcceptor() {
+		this.cardEnabled = true;
+		vm.getDisplay().display("Card acceptor has been enabled.");
+		vm.getDisplay().display("Tap/Swipe/Insert");
+	}
+
+	public void disableCardAcceptor() {
+		this.cardEnabled = false;
+		vm.getDisplay().display("Card acceptor has been disabled.");
+	}
+
+	public void purchasedByCard(boolean succeeded, Card card) throws DisabledException {
+		if(succeeded) {
+			this.cardAcceptor.returnCard(card);
+			this.purchaseSucceeded = true;
+			vm.getDisplay().display("Approved. Remove card.");
+		}
+		else {
+			this.cardAcceptor.returnCard(card);
+			this.purchaseSucceeded = false;
+			vm.getDisplay().display("Payment failed. Try again.");
 		}
 		
-		
 	}
-	/*END */
+
+	public void payByTappingCard(Card card, int index) throws DisabledException {
+		this.cardAcceptor.tapCard(card);
+		checkPayByCard(card, index);
+	}
+
+	public void payByWipingCard(Card card, int index) throws DisabledException {
+		this.cardAcceptor.wipeCard(card);
+		checkPayByCard(card, index);
+	}
+
+	public void payByInsertingCard(Card card, int index) throws DisabledException {
+		this.cardAcceptor.insertCard(card);
+		checkPayByCard(card, index);
+	}
+
+	/* END */
 		
 	/**
 	* This method returns the event logger
