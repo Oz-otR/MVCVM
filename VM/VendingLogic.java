@@ -15,6 +15,8 @@ public class VendingLogic implements VendingLogicInterface {
 	private Timer timer1;
 	private Timer timer2;
 	
+	public boolean cardEnabled = true; //For enabling credit card purchases, on by default (NEW)
+	
 	private final double bitCoinExchangeRate = 12383.43;
 	private boolean enableBitCoin =false;
 	private VendingBTChardware tempBTChardware; //We create a temporary hardware piece in lue of the actual hardware.
@@ -90,8 +92,73 @@ public class VendingLogic implements VendingLogicInterface {
 		int cad = (int) Math.floor(btc*bitCoinExchangeRate);	
 		return cad;
 	}
-
 	
+	/* RYAN, Added Methods for checking a card, and then processing payment. Handles if there is already coins in the machine
+	and if only paying by card. Gives out messages to the display for most of the errors */
+	public void checkPayByCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException //index is the index of the button pressed 
+	{
+		if(cardEnabled)
+		{
+			if(Card.getAcceptedBanks().contains(card.getBankName()))
+			{
+				if (!(card.getCardType() == "Invalid")) //check if the card is Credit or Debit 
+				{
+				//Then the bank type can be used in the vending machine system
+					if(card.getCardBalance() > 0) //if the balance is more than 0, then go to try to pay with the card 
+					{
+						vm.getDisplay().display("Paying with " + card.getBankName() + " " + card.getCardType() + " card");
+						payByCard(card, index); //message of what type of card they are paying with, then proceeds to pay with that card 
+					}
+				}
+			}
+			vm.getDisplay().display("Card not valid");
+		}
+		else
+		{
+			vm.getDisplay().display("Credit or debit cards are not accepted"); //if the cardEnabled is turned off 
+		}
+	}
+	
+	public void payByCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException
+	{
+		double price = (double) vm.getPopKindCost(index) / 100;
+		double funds = card.getCardBalance(); //total funds on that card 
+		double thisCredit = (double) credit / 100;
+		if (credit > 0) //if there are coins in the machine 
+		{
+			price = price - thisCredit; //subtracts the coins which are already in the machine from the price
+			System.out.println(funds);
+			System.out.println(price);
+			if (funds < price)
+			{
+				vm.getDisplay().display("Card has insufficient funds");
+				price = price + thisCredit; //set the price back to normal 
+			}
+			else 
+			{
+				funds = funds - price; //subtract the price payed from the funds of the card 
+				card.setNewBalance(funds); //set new the balance of the card after purchase 
+				credit = 0;
+				vm.getPopCanRack(index).dispensePopCan();
+			}
+		}
+		else //credit is 0, no coins are in the machine, pay only by card 
+		{
+			if (card.getCardBalance() >= price)
+			{
+				funds = funds - price;
+				card.setNewBalance(funds);
+				credit = 0;
+				vm.getPopCanRack(index).dispensePopCan();
+			}
+			else 
+				vm.getDisplay().display("Card has insufficient funds");
+		}
+		
+		
+	}
+	/*END */
+		
 	/**
 	* This method returns the event logger
 	* @param None
