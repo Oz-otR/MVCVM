@@ -31,21 +31,25 @@ public class CardAcceptorListenerDevice implements CardAcceptorListener {
 
 	}
 
+	@Override
 	public void validCardTapped(CardAcceptor cardAcceptor, Card card) {
 		logic.getVm().getDisplay().display("Card has been tapped.");
 
 	}
 
+	@Override
 	public void validCardWiped(CardAcceptor cardAcceptor, Card card) {
 		logic.getVm().getDisplay().display("Card has been wiped.");
 
 	}
 
+	@Override
 	public void validCardInserted(CardAcceptor cardAcceptor, Card card) {
 		logic.getVm().getDisplay().display("Card has been inserted.");
 
 	}
 
+	@Override
 	public void cardRejected(CardAcceptor cardAcceptor, Card card) {
 		logic.getVm().getDisplay().display("Card has been returned.");
 
