@@ -158,7 +158,7 @@ public class VendingLogic implements VendingLogicInterface {
 	}
 	/* END */
 
-	/*
+		/*
 	 * Cynthia: Created new methods to: enable and disable card acceptor pay by
 	 * tapping, wiping and inserting card and return card
 	 */
@@ -181,12 +181,9 @@ public class VendingLogic implements VendingLogicInterface {
 
 	public void purchasedByCard(boolean succeeded, Card card) throws DisabledException {
 		if(succeeded) {
-			this.cardAcceptor.returnCard(card);
 			this.purchaseSucceeded = true;
-			vm.getDisplay().display("Approved. Remove card.");
 		}
 		else {
-			this.cardAcceptor.returnCard(card);
 			this.purchaseSucceeded = false;
 			vm.getDisplay().display("Payment failed. Try again.");
 		}
@@ -196,16 +193,26 @@ public class VendingLogic implements VendingLogicInterface {
 	public void payByTappingCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException {
 		this.cardAcceptor.tapCard(card);
 		checkPayByCard(card, index);
+		if(this.purchaseSucceeded) {
+			vm.getDisplay().display("Approved.");
+		}
 	}
 
 	public void payByWipingCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException {
 		this.cardAcceptor.wipeCard(card);
 		checkPayByCard(card, index);
+		if(this.purchaseSucceeded) {
+			vm.getDisplay().display("Approved.");
+		}
 	}
 
 	public void payByInsertingCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException {
 		this.cardAcceptor.insertCard(card);
 		checkPayByCard(card, index);
+		if(this.purchaseSucceeded) {
+			vm.getDisplay().display("Approved. Remove card.");
+		}
+		this.cardAcceptor.returnCard(card);
 	}
 
 	/* END */
