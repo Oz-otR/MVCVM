@@ -241,7 +241,6 @@ public class VendingLogic implements VendingLogicInterface {
 			this.purchaseSucceeded = true;
 		} else {
 			this.purchaseSucceeded = false;
-			vm.getDisplay().display("Payment failed. Try again.");
 		}
 
 	}
@@ -260,6 +259,9 @@ public class VendingLogic implements VendingLogicInterface {
 		if (this.purchaseSucceeded) {
 			vm.getDisplay().display("Approved.");
 		}
+		else {
+			vm.getDisplay().display("Payment failed. Try again.");
+		}
 	}
 
 	/**
@@ -276,6 +278,9 @@ public class VendingLogic implements VendingLogicInterface {
 		if (this.purchaseSucceeded) {
 			vm.getDisplay().display("Approved.");
 		}
+		else {
+			vm.getDisplay().display("Payment failed. Try again.");
+		}
 	}
 
 	/**
@@ -291,6 +296,9 @@ public class VendingLogic implements VendingLogicInterface {
 		checkPayByCard(card, index);
 		if (this.purchaseSucceeded) {
 			vm.getDisplay().display("Approved. Remove card.");
+		}
+		else {
+			vm.getDisplay().display("Payment failed. Try again.");
 		}
 		this.cardAcceptor.returnCard(card);
 	}
