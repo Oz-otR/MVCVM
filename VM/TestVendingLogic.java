@@ -435,7 +435,149 @@ public class TestVendingLogic {
 		}
 	}
 	
+		/* Cynthia, tested the card usage */
+
+	private CardAcceptorListenerDevice cardListener;
+	public void testCardSetUp() {
+		VendingSetup vendset = new VendingSetup();
+		vm = vendset.getVendingMachine();
+		logic = new VendingLogic(vm);
+		cardListener = new CardAcceptorListenerDevice(logic);
+		logic.registerCardAcceptor(cardListener);
+	}
 	
+	/**
+	 * Tests enabling card acceptor
+	 * 
+	 * @throws CapacityExceededException
+	 * @throws EmptyException
+	 * @throws DisabledException
+	 */
+	@Test
+	public void testEnablingCardAcceptor() throws DisabledException, EmptyException, CapacityExceededException {
+
+		testCardSetUp();
+
+		logic.enableCardAcceptor();
+		assertEquals(true,logic.cardEnabled);
+	}
+	
+	/**
+	 * Tests disabling card acceptor
+	 * 
+	 * @throws CapacityExceededException
+	 * @throws EmptyException
+	 * @throws DisabledException
+	 */
+	@Test
+	public void testDisablingCardAcceptor() throws DisabledException, EmptyException, CapacityExceededException {
+
+		testCardSetUp();
+
+		logic.disableCardAcceptor();
+		assertEquals(false,logic.cardEnabled);
+	}
+
+	/**
+	 * Tests paying by tapping a card
+	 * 
+	 * @throws CapacityExceededException
+	 * @throws EmptyException
+	 * @throws DisabledException
+	 */
+	@Test
+	public void testTappingCard() throws DisabledException, EmptyException, CapacityExceededException {
+
+		testCardSetUp();
+
+		Card card1 = new Card(0, "BMO", 100.00); // create a valid card, with funds
+		Card card2 = new Card(0, "CIBC", 0.25); // not enough to cover pop cost with coins
+		Card card3 = new Card(0, "Barclays", 20.00); // invalid bank
+		
+		logic.payByTappingCard(card1, 2); // pay by tapping card
+		assertEquals(1,this.cardListener.getTappedCount());	//tapped count = 1
+		assertEquals(0,this.cardListener.getRejectedCount());	//rejected count = 0
+		assertEquals(logic.getPurchaseSucceeded(),true);//payment succeeded
+		
+		logic.payByTappingCard(card2, 2);
+		assertEquals(2,this.cardListener.getTappedCount());	//tapped count = 2
+		assertEquals(0,this.cardListener.getRejectedCount());	//rejected count = 0
+		assertEquals(logic.getPurchaseSucceeded(),false);//payment failed
+		
+		logic.payByTappingCard(card3, 2);
+		assertEquals(3,this.cardListener.getTappedCount());	//tapped count = 3
+		assertEquals(0,this.cardListener.getRejectedCount());	//rejected count = 0
+		assertEquals(logic.getPurchaseSucceeded(),false);//payment failed
+			
+	}
+	
+	/**
+	 * Tests paying by wiping a card
+	 * 
+	 * @throws CapacityExceededException
+	 * @throws EmptyException
+	 * @throws DisabledException
+	 */
+	@Test
+	public void testWipingCard() throws DisabledException, EmptyException, CapacityExceededException {
+
+		testCardSetUp();
+
+		Card card1 = new Card(0, "BMO", 100.00); // create a valid card, with funds
+		Card card2 = new Card(0, "CIBC", 0.25); // not enough to cover pop cost with coins
+		Card card3 = new Card(0, "Barclays", 20.00); // invalid bank
+		
+		logic.payByWipingCard(card1, 2); // pay by wiping card
+		assertEquals(1,this.cardListener.getWipedCount());	//wiped count = 1
+		assertEquals(0,this.cardListener.getRejectedCount());	//rejected count = 0
+		assertEquals(logic.getPurchaseSucceeded(),true);//payment succeeded
+		
+		logic.payByWipingCard(card2, 2);
+		assertEquals(2,this.cardListener.getWipedCount());	//wiped count = 2
+		assertEquals(0,this.cardListener.getRejectedCount());	//rejected count = 0
+		assertEquals(logic.getPurchaseSucceeded(),false);//payment failed
+		
+		logic.payByWipingCard(card3, 2);
+		assertEquals(3,this.cardListener.getWipedCount());	//wiped count = 3
+		assertEquals(0,this.cardListener.getRejectedCount());	//rejected count = 0
+		assertEquals(logic.getPurchaseSucceeded(),false);//payment failed
+			
+	}
+	
+	/**
+	 * Tests paying by inserting a card
+	 * 
+	 * @throws CapacityExceededException
+	 * @throws EmptyException
+	 * @throws DisabledException
+	 */
+	@Test
+	public void testInsertingCard() throws DisabledException, EmptyException, CapacityExceededException {
+
+		testCardSetUp();
+
+		Card card1 = new Card(0, "BMO", 100.00); // create a valid card, with funds
+		Card card2 = new Card(0, "CIBC", 0.25); // not enough to cover pop cost with coins
+		Card card3 = new Card(0, "Barclays", 20.00); // invalid bank
+		
+		logic.payByInsertingCard(card1, 2); // pay by inserting card
+		assertEquals(1,this.cardListener.getInsertedCount());	//inserted count = 1
+		assertEquals(1,this.cardListener.getRejectedCount());	//rejected count = 1
+		assertEquals(logic.getPurchaseSucceeded(),true);//payment succeeded
+		
+		logic.payByInsertingCard(card2, 2);
+		assertEquals(2,this.cardListener.getInsertedCount());	//inserted count = 2
+		assertEquals(2,this.cardListener.getRejectedCount());	//rejected count = 2
+		assertEquals(logic.getPurchaseSucceeded(),false);//payment failed
+		
+		logic.payByInsertingCard(card3, 2);
+		assertEquals(3,this.cardListener.getInsertedCount());	//inserted count = 3
+		assertEquals(3,this.cardListener.getRejectedCount());	//rejected count = 3
+		assertEquals(logic.getPurchaseSucceeded(),false);//payment failed
+			
+	}
+
+	/* Done */
 	
 	
 	

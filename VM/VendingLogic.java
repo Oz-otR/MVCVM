@@ -93,7 +93,7 @@ public class VendingLogic implements VendingLogicInterface {
 		return cad;
 	}
 	
-	/* RYAN, Added Methods for checking a card, and then processing payment. Handles if there is already coins in the machine
+		/* RYAN, Added Methods for checking a card, and then processing payment. Handles if there is already coins in the machine
 	and if only paying by card. Gives out messages to the display for most of the errors */
 	public void checkPayByCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException //index is the index of the button pressed 
 	{
@@ -111,11 +111,15 @@ public class VendingLogic implements VendingLogicInterface {
 					}
 				}
 			}
-			vm.getDisplay().display("Card not valid");
+			else {
+				vm.getDisplay().display("Card not valid");
+				this.purchasedByCard(false, card);
+			}
 		}
 		else
 		{
 			vm.getDisplay().display("Credit or debit cards are not accepted"); //if the cardEnabled is turned off 
+			this.purchasedByCard(false, card);
 		}
 	}
 	
@@ -132,6 +136,7 @@ public class VendingLogic implements VendingLogicInterface {
 			if (funds < price)
 			{
 				vm.getDisplay().display("Card has insufficient funds");
+				this.purchasedByCard(false, card);
 				price = price + thisCredit; //set the price back to normal 
 			}
 			else 
@@ -140,6 +145,7 @@ public class VendingLogic implements VendingLogicInterface {
 				card.setNewBalance(funds); //set new the balance of the card after purchase 
 				credit = 0;
 				vm.getPopCanRack(index).dispensePopCan();
+				this.purchasedByCard(true, card);
 			}
 		}
 		else //credit is 0, no coins are in the machine, pay only by card 
@@ -150,14 +156,146 @@ public class VendingLogic implements VendingLogicInterface {
 				card.setNewBalance(funds);
 				credit = 0;
 				vm.getPopCanRack(index).dispensePopCan();
+				this.purchasedByCard(true, card);
 			}
-			else 
+			else{
 				vm.getDisplay().display("Card has insufficient funds");
+				this.purchasedByCard(false, card);
+			}		
 		}
 		
 		
 	}
 	/*END */
+
+	/*
+	 * Cynthia: Created new methods to: enable and disable card acceptor pay by
+	 * tapping, wiping and inserting card and return card
+	 */
+	private CardAcceptor cardAcceptor = new CardAcceptor(); // Notice: this card acceptor has not been installed into the vending machine.
+	private boolean purchaseSucceeded = false; // A flag announcing whether the purchase is successful or not. In case
+												// it'll be needed in the future.
+
+	/**
+	 * This method returns the vm field of the logic object
+	 * 
+	 * @param None
+	 * @return this.vm
+	 */
+	public VendingMachine getVm() {
+		return this.vm;
+	}
+	
+	/**
+	 * This method returns the purchaseSucceeded field of the logic object
+	 * 
+	 * @param None
+	 * @return this.purchaseSucceeded
+	 */
+	public boolean getPurchaseSucceeded() {
+		return this.purchaseSucceeded;
+	}
+	
+	/**
+	 * This method register the card acceptor in the hardware
+	 * 
+	 * @param None
+	 * @return void
+	 */
+	public void registerCardAcceptor(CardAcceptorListenerDevice listener) {
+		this.cardAcceptor.register(listener);
+	}
+
+	/**
+	 * This method enables the card acceptor
+	 * 
+	 * @param None
+	 * @return void
+	 */
+	public void enableCardAcceptor() {
+		this.cardEnabled = true;
+		vm.getDisplay().display("Card acceptor has been enabled.");
+		vm.getDisplay().display("Tap/Swipe/Insert");
+	}
+
+	/**
+	 * This method disables the card acceptor
+	 * 
+	 * @param None
+	 * @return void
+	 */
+	public void disableCardAcceptor() {
+		this.cardEnabled = false;
+		vm.getDisplay().display("Card acceptor has been disabled.");
+	}
+
+	/**
+	 * This method verifies if the purchase is successful
+	 * 
+	 * @param succeeded:
+	 *            indicating if the payment is successful card: the paying card
+	 * @return void
+	 */
+	public void purchasedByCard(boolean succeeded, Card card) throws DisabledException {
+		if (succeeded) {
+			this.purchaseSucceeded = true;
+		} else {
+			this.purchaseSucceeded = false;
+			vm.getDisplay().display("Payment failed. Try again.");
+		}
+
+	}
+
+	/**
+	 * This method process paying by tapping cards
+	 * 
+	 * @param card:
+	 *            the paying card index: the index of the pop
+	 * @return void
+	 */
+	public void payByTappingCard(Card card, int index)
+			throws DisabledException, EmptyException, CapacityExceededException {
+		this.cardAcceptor.tapCard(card);
+		checkPayByCard(card, index);
+		if (this.purchaseSucceeded) {
+			vm.getDisplay().display("Approved.");
+		}
+	}
+
+	/**
+	 * This method process paying by wiping cards
+	 * 
+	 * @param card:
+	 *            the paying card index: the index of the pop
+	 * @return void
+	 */
+	public void payByWipingCard(Card card, int index)
+			throws DisabledException, EmptyException, CapacityExceededException {
+		this.cardAcceptor.wipeCard(card);
+		checkPayByCard(card, index);
+		if (this.purchaseSucceeded) {
+			vm.getDisplay().display("Approved.");
+		}
+	}
+
+	/**
+	 * This method process paying by inserting cards
+	 * 
+	 * @param card:
+	 *            the paying card index: the index of the pop
+	 * @return void
+	 */
+	public void payByInsertingCard(Card card, int index)
+			throws DisabledException, EmptyException, CapacityExceededException {
+		this.cardAcceptor.insertCard(card);
+		checkPayByCard(card, index);
+		if (this.purchaseSucceeded) {
+			vm.getDisplay().display("Approved. Remove card.");
+		}
+		this.cardAcceptor.returnCard(card);
+	}
+
+	/* END */
 		
 	/**
 	* This method returns the event logger
