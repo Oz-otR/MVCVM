@@ -193,17 +193,17 @@ public class VendingLogic implements VendingLogicInterface {
 		
 	}
 
-	public void payByTappingCard(Card card, int index) throws DisabledException {
+	public void payByTappingCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException {
 		this.cardAcceptor.tapCard(card);
 		checkPayByCard(card, index);
 	}
 
-	public void payByWipingCard(Card card, int index) throws DisabledException {
+	public void payByWipingCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException {
 		this.cardAcceptor.wipeCard(card);
 		checkPayByCard(card, index);
 	}
 
-	public void payByInsertingCard(Card card, int index) throws DisabledException {
+	public void payByInsertingCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException {
 		this.cardAcceptor.insertCard(card);
 		checkPayByCard(card, index);
 	}
