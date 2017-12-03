@@ -1,5 +1,3 @@
-package groupAssignment2;
-
 import org.lsmr.vending.hardware.AbstractHardware;
 import org.lsmr.vending.hardware.AbstractHardwareListener;
 import org.lsmr.vending.hardware.Display;
@@ -24,22 +22,31 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	public String buttonField;
 	public int popCanRackIndex;
 	public int newPrice;
+	
 	public String displayMessage;
+	public String displayLog;
 	
 	public ConfigPanel(VendingMachine vmIn){
 		
-		buttonList = new PushButton[37];
-		
+		buttonList = new PushButton[38];
 		this.vm = vmIn;
+		
+		mode1=false;
+		mode2=false;
+		mode3=false;
+		
+		buttonField = "";
 		
 		for(int i = 0; i < 37; i++){
 			buttonList[i] = vm.getConfigurationPanel().getButton(i);
 		}
 		
 		buttonList[37] = vm.getConfigurationPanel().getEnterButton();
+		display = vm.getConfigurationPanel().getDisplay();
 		
 		for(int i = 0; i < buttonList.length; i++)
 			buttonList[i].register(this);
+		vm.getConfigurationPanel().getDisplay().register(this);
 	}
 	
 	public void populateCodes(){
@@ -51,21 +58,21 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		
 		int buttonIndex = (int) button;
 
-		System.out.println(buttonIndex);
-
-		
 		if(buttonIndex >= 97 && buttonIndex <= 122)		
 			buttonIndex -= 97;
 		
-		if(buttonIndex >= 48 && buttonIndex <=57)		
-			buttonIndex =- 22;
+		else if(buttonIndex >= 48 && buttonIndex <=57)		
+			buttonIndex -= 22;
 		
-		if(buttonIndex == 94)
+		else if(buttonIndex == 94)
 			buttonIndex = 36;
 		
-		System.out.println("button Index: " + buttonIndex);
+		else if(buttonIndex == 43)
+			buttonIndex = 37;
 		
-		buttonList[buttonIndex].press();		
+		//System.out.println("Pressing button at index: " + buttonIndex );
+		
+		buttonList[buttonIndex].press();	
 	}
 	
 	public char buttonPressed(PushButton button){
@@ -106,15 +113,16 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		
 		System.out.println("button Pressed: " + buttonPressed(button));
 		
-		if(buttonPressed(button) == '+'){			
+		if(buttonPressed(button) == '+'){
 			
+
 			if(!mode1 && !mode2 && !mode3){
 				if(buttonField != null){
-					if(buttonField == "a")
+					if(buttonField.charAt(0) == 'a')
 						enableConfigMode();
 					
 					else{
-						buttonField = null;
+						buttonField = "";
 						displayMessage("Invalid Command!");
 					}
 				}
@@ -127,11 +135,14 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 				if(buttonField != null){
 					try{
 						popCanRackIndex = Integer.parseInt(buttonField);
+						
+						mode2=true;
+						
 						displayMessage("Enter new Price: ");
-						buttonField = null;
+						buttonField = "";
 						
 					}catch(Exception e){
-						buttonField = null;
+						buttonField = "";
 						displayMessage("Invalid Command!");						
 					}
 				}
@@ -147,11 +158,11 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 						String message = "Rack Selected: " + popCanRackIndex + "\nPrice Selected: " + newPrice;
 						message += "\n Do you want to make these changes? Press y for YES, n for NO";
 						displayMessage(message);
-						buttonField = null;
+						buttonField = "";
 						mode3 = true;
 						
 					}catch(Exception e){
-						buttonField = null;
+						buttonField = "";
 						displayMessage("Invalid Command!");					
 					}
 				}
@@ -162,7 +173,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 			
 			else 
 				if(buttonField != null){
-					if(buttonField == "y")
+					if(buttonField.charAt(0) == 'y')
 						saveChanges();
 					else{
 						displayMessage("Discarding changes");
@@ -174,13 +185,29 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 				else{
 					displayMessage("Please enter a command!");
 				}				
-		}		
+		}
+		else if(buttonPressed(button) == '^') {
+			
+		}
+		else {
+			buttonField += buttonPressed(button);
+			System.out.println("buttonField: " + buttonField);
+	
+		}
+	}
+	
+	//This is for debugging 
+	public void displayModes() {
+		
+		System.out.println("MODE1: " + mode1);
+		System.out.println("MODE2: " + mode2);
+		System.out.println("MODE3: " + mode3);
 	}
 	
 	public void saveChanges(){
 		
-		ArrayList popCanCosts = new ArrayList<Integer>();
-		ArrayList popCanNames = new ArrayList<String>();
+		ArrayList<Integer> popCanCosts = new ArrayList<Integer>();
+		ArrayList<String> popCanNames = new ArrayList<String>();
 		
 		
 		for(int i = 0; i < vm.getNumberOfPopCanRacks(); i++)
@@ -210,13 +237,19 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		displayMessage = "\nSelect Pop Rack Number";
 		display.display(displayMessage);
 		
-		buttonField = null;
+		buttonField = "";
 		
+		displayModes();		
+	}
+	
+	public Display getDisplay() {
+		return vm.getConfigurationPanel().getDisplay();
 	}
 
 	@Override
 	public void messageChange(Display display, String oldMessage, String newMessage) {
-		// TODO Auto-generated method stub
+		System.out.println(newMessage);
+		displayLog += newMessage;
 		
 	}
 
