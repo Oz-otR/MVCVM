@@ -303,7 +303,7 @@ public class TestConfigPanel {
 		}
 		
 		@Test
-		public void test_NotChae() {
+		public void testNameMessage() {
 			
 			setup();
 			cp.pressButton('a');
@@ -326,7 +326,7 @@ public class TestConfigPanel {
 		}	
 		
 		@Test
-		public void t() {
+		public void checkDisplays() {
 			setup();
 			assertTrue(cp.getDisplay().equals(vm.getConfigurationPanel().getDisplay()));
 		}
