@@ -1,5 +1,4 @@
 package A4;
-
 import org.lsmr.vending.hardware.AbstractHardware;
 import org.lsmr.vending.hardware.AbstractHardwareListener;
 import org.lsmr.vending.hardware.Display;
@@ -12,7 +11,9 @@ import org.lsmr.vending.hardware.VendingMachine;
 import java.util.ArrayList;
 
 
+
 public class ConfigPanel implements PushButtonListener, DisplayListener, LockListener{
+
 	
 	public VendingMachine vm;	
 	public String[] Codes;
@@ -23,24 +24,29 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 	public boolean mode2;
 	public boolean mode3;
 	public boolean mode4;
+
 	
 	public String buttonField;
 	public int popCanRackIndex;
 	public int newPrice;
+
 	public String newRackName;
 	
 	public String displayMessage;
 	public String displayLog;
-
 	
 	public ConfigPanel(VendingMachine vmIn){
 		
 		buttonList = new PushButton[38];
-		
+
 		this.vm = vmIn;
 		
 		resetButtonField();
-		
+    
+    mode1=false;
+		mode2=false;
+		mode3=false;
+		buttonField = "";
 		for(int i = 0; i < 37; i++)
 			buttonList[i] = vm.getConfigurationPanel().getButton(i);
 		
@@ -50,8 +56,12 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 		
 		for(int i = 0; i < buttonList.length; i++)
 			buttonList[i].register(this);
-		
+
 		vm.getConfigurationPanel().getDisplay().register(this);
+	}
+	
+	public void populateCodes(){	
+
 	}
 	
 	public void pressButton(char button){
@@ -81,7 +91,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 		
 		while(!button.equals(buttonList[buttonIndex]))
 			buttonIndex++;
-		
+
 		if(buttonIndex >= 0 && buttonIndex <= 25)
 			buttonIndex += 97;
 		
@@ -90,7 +100,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 		
 		else if(buttonIndex == 36)
 			buttonIndex = 94;
-		
+
 		else if(buttonIndex == 37)
 			buttonIndex = 43;
 		
@@ -285,7 +295,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 		
 		else {
 			buttonField += buttonPressed(button);
-			
+
 			System.out.println("buttonField: " + buttonField);
 	
 		}
@@ -295,7 +305,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 	public void displayModes() {
 		
 		System.out.println("MODE1: " + mode1);
-		
+
 		System.out.println("MODE2: " + mode2);
 		
 		System.out.println("MODE3: " + mode3);
@@ -358,8 +368,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 
 		System.out.println("Config Mode Enabled");
 		
-		mode1=true;
-		
+		mode1=true;		
 		mode2=false;
 		
 		displayMessage = "\nSelect Pop Rack Number: ";
@@ -367,7 +376,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 		display.display(displayMessage);
 		
 		resetButtonField();
-		
+		//displayModes();
 	}
 	
 	public Display getDisplay() {
@@ -377,12 +386,13 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 
 	@Override
 	public void messageChange(Display display, String oldMessage, String newMessage) {
-		
+
 		System.out.println(newMessage);
-		
+
 		displayLog += newMessage;
 		
 	}
+
 
 	@Override
 	public void locked(Lock lock) {
@@ -395,5 +405,4 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 		//Lock listener <------ We need to implement lock
 		
 	}
-
 }
