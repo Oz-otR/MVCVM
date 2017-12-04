@@ -1,4 +1,4 @@
-package groupAssignment2;
+
 
 import static org.junit.Assert.*;
 
@@ -10,6 +10,11 @@ import static org.junit.Assert.*;
  */
 
 import org.junit.Test;
+import org.lsmr.vending.hardware.AbstractHardware;
+import org.lsmr.vending.hardware.AbstractHardwareListener;
+import org.lsmr.vending.hardware.Display;
+import org.lsmr.vending.hardware.DisplayListener;
+import org.lsmr.vending.hardware.PushButton;
 import org.lsmr.vending.hardware.VendingMachine;
 
 public class TestConfigPanel {
@@ -17,6 +22,7 @@ public class TestConfigPanel {
 	private VendingMachine vm;
 	public ConfigPanel cp;
 	String message = "";
+	private DisplayStub dstub;
 	
 	/**
 	 * Methid creates a vendingmachine, the ConfigPanel logic and a base setup class
@@ -24,7 +30,9 @@ public class TestConfigPanel {
 	private void setup(){
 		VendingSetup vendset = new VendingSetup();
 		vm = vendset.getVendingMachine();
+		dstub = new DisplayStub(vm);
 		cp = new ConfigPanel(vm);
+		cp.display.register(dstub);
 	}
 	
 	/**
@@ -61,6 +69,7 @@ public class TestConfigPanel {
 	
 	/**
 	 * Method to test if the rack was not entered and just pressing enter doesn't change the modes of config panel.
+	 * and displays message
 	 */
 	@Test
 	public void test_NotEnterRackNum() {
@@ -73,6 +82,8 @@ public class TestConfigPanel {
 		assertFalse(cp.mode2);
 		assertFalse(cp.mode3);
 		assertFalse(cp.mode4);		
+		assertTrue(dstub.newer.equals("Please enter a command!"));
+
 	}
 	
 	/**
@@ -111,7 +122,9 @@ public class TestConfigPanel {
 		assertTrue(cp.mode1);
 		assertTrue(cp.mode2);
 		assertFalse(cp.mode3);
-		assertFalse(cp.mode4);		
+		assertFalse(cp.mode4);	
+		assertTrue(dstub.newer.equals("Please enter a command!"));
+
 	}
 	
 	/**
@@ -234,4 +247,113 @@ public class TestConfigPanel {
 		assertFalse(cp.mode4);
 		//assertEquals("");
 	}
+	
+	//fail entering number
+		@Test
+		public void isInvalidPress(){
+			
+			setup();
+			cp.pressButton('a');
+			cp.pressButton('+');
+			
+			cp.pressButton('p');
+			cp.pressButton('+');
+			assertTrue(dstub.newer.equals("Invalid Command!"));
+		}
+		
+		
+		//fail entering congfig mode
+		@Test
+		public void isInvalidPressforConfigMode(){
+			
+			setup();
+			cp.pressButton('b');
+			cp.pressButton('+');
+			assertTrue(dstub.newer.equals("Invalid Command!"));
+		}
+		
+		
+		/**
+		 * At the Config Panel, not even enabled, just press enter should display
+		 * "Please enter a command" since there is no command entered
+		 */
+		@Test
+		public void justPressingEnter(){	
+			setup();
+			cp.pressButton('+');
+			assertTrue(dstub.newer.equals("Please enter a command!"));
+		}
+		
+		
+		/**
+		*
+		*Expecting an integer, so it is invalid, checking for message
+		 */
+		@Test
+		public void isInvalidPressMessage(){	
+			setup();
+			cp.pressButton('a');
+			cp.pressButton('+');
+			cp.pressButton('3');
+			cp.pressButton('+');
+			cp.pressButton('b');
+			cp.pressButton('+');
+
+			assertTrue(dstub.newer.equals("Invalid Command!"));
+		}
+		
+		@Test
+		public void testNameMessage() {
+			
+			setup();
+			cp.pressButton('a');
+			cp.pressButton('+');
+			cp.pressButton('3');
+			cp.pressButton('+');
+			cp.pressButton('2');
+			cp.pressButton('5');
+			cp.pressButton('0');
+			cp.pressButton('+');
+			cp.pressButton('c');
+			cp.pressButton('o');
+			cp.pressButton('k');
+			cp.pressButton('e');
+			cp.pressButton('+');
+			cp.pressButton('+');
+			
+			assertTrue(dstub.newer.equals("Please enter a command!"));
+
+		}	
+		
+		@Test
+		public void checkDisplays() {
+			setup();
+			assertTrue(cp.getDisplay().equals(vm.getConfigurationPanel().getDisplay()));
+		}
+		
+}
+/**
+ * Created a stub class to check messages
+ */
+class DisplayStub implements DisplayListener {
+	String newer = "";
+
+	public DisplayStub(VendingMachine vm) {
+	}
+
+	@Override
+	public void enabled(AbstractHardware<? extends AbstractHardwareListener> hardware) {
+		
+	}
+
+	@Override
+	public void disabled(AbstractHardware<? extends AbstractHardwareListener> hardware) {
+		
+	}
+
+	@Override
+	public void messageChange(Display display, String oldMessage, String newMessage) {
+		newer = newMessage;
+	}
+	
 }
