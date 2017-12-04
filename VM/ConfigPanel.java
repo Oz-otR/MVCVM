@@ -1,4 +1,6 @@
-package groupAssignment2;
+
+
+import java.util.ArrayList;
 
 import org.lsmr.vending.hardware.AbstractHardware;
 import org.lsmr.vending.hardware.AbstractHardwareListener;
@@ -7,7 +9,6 @@ import org.lsmr.vending.hardware.DisplayListener;
 import org.lsmr.vending.hardware.PushButton;
 import org.lsmr.vending.hardware.PushButtonListener;
 import org.lsmr.vending.hardware.VendingMachine;
-import java.util.ArrayList;
 
 /**
  * This is a logic class for configuration panel in a Vending Machine. 
@@ -30,10 +31,11 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	public PushButton[] buttonList;
 	public Display display;
 	
-	public boolean mode1;
-	public boolean mode2;
-	public boolean mode3;
-	public boolean mode4;
+	//TODO Is there better names for these flags other than "mode"?
+	public boolean mode1;// true when config is enabled?
+	public boolean mode2;// true when chosing a price?
+	public boolean mode3;// true when changing name?
+	public boolean mode4;// true when??
 	
 	public String buttonField;
 	public int popCanRackIndex;
@@ -127,13 +129,13 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	@Override
 	public void enabled(AbstractHardware<? extends AbstractHardwareListener> hardware) {
 		// TODO Auto-generated method stub
-		
+		//probably something to do with the lock
 	}
 
 	@Override
 	public void disabled(AbstractHardware<? extends AbstractHardwareListener> hardware) {
 		// TODO Auto-generated method stub
-		
+		//probably something to do with the lock
 	}
 	
 	/**
@@ -150,7 +152,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		if(buttonPressed(button) == '+'){			
 			
 			if(!mode1 && !mode2 && !mode3 && !mode4){
-				if(buttonField != null){
+				if(!buttonField.equals("")){
 					if(buttonField.charAt(0) == 'a'){
 						enableConfigMode();
 					}
@@ -166,7 +168,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 			}
 			
 			else if (mode1 && !mode2 && !mode3 && !mode4){
-				if(buttonField != null){
+				if(!buttonField.equals("")){
 					try{
 						popCanRackIndex = Integer.parseInt(buttonField);
 						mode2 = true;
@@ -184,7 +186,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 			}
 			
 			else if (mode1 && mode2 && !mode3 && !mode4){
-				if(buttonField != null){
+				if(!buttonField.equals("")){
 					try{
 						newPrice = Integer.parseInt(buttonField);
 						String message = "Rack Selected: " + popCanRackIndex + "\nPrice Selected: " + newPrice;
@@ -199,20 +201,20 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 					}
 				}
 				else{
-					displayMessage("Please enter a command!");
+					displayMessage	("Please enter a command!");
 				}
 			}
 						
 			else if(mode1 && mode2 && mode3 && !mode4){
-				if(buttonField != null){
-					try{
+				if(!buttonField.equals("")){
+				//	try{
 						rackName = buttonField;
 												
-					}catch(Exception e){
-						buttonField = "";
+			//		}catch(Exception e){
+						buttonField = ""; 
 						displayMessage("Invalid Command!");					
 					}
-				}
+			//	}
 				else{
 					rackName = vm.getPopKindName(popCanRackIndex);
 				}	
@@ -224,7 +226,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 				mode4 = true;
 			}
 			else{
-				if(buttonField != null){
+				if(!buttonField.equals("")){
 					if(buttonField.charAt(0) == 'y')
 						saveChanges();
 					else{
@@ -291,7 +293,8 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	 */
 	public void displayMessage(String inMessage){
 		
-		displayMessage += "\n" + inMessage;
+	//	displayMessage += "\n" + inMessage;
+		displayMessage = inMessage;
 		display.display(displayMessage);
 	}
 	
