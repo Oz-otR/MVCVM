@@ -22,6 +22,8 @@ public class LockLogic implements LockListener {
 		
 		lock.register(this);
 		
+		this.unlock();
+
 		
 	}
 
@@ -69,6 +71,11 @@ public class LockLogic implements LockListener {
 		vm.disableSafety();
 		
 		lock.unlock();
+	}	
+	public boolean isLocked(){
+		
+		return lock.isLocked();		
 	}
+
 
 }
