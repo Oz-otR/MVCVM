@@ -12,9 +12,7 @@ import java.util.ArrayList;
 
 
 
-
 public class ConfigPanel implements PushButtonListener, DisplayListener, LockListener{
-
 
 	
 	public VendingMachine vm;	
@@ -22,8 +20,6 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 	public PushButton[] buttonList;
 	public Display display;
 	
-	public boolean panelEnabled;
-
 	public boolean mode1;
 	public boolean mode2;
 	public boolean mode3;
@@ -64,34 +60,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 		vm.getConfigurationPanel().getDisplay().register(this);
 	}
 	
-
-	public void enablePanel() {
-		
-		for (PushButton button: buttonList)
-			
-			button.enable();
-		
-		
-		display.enable();
-		
-		panelEnabled = true;
-		
-	}
-	
-	public void disablePanel() {
-		
-		for (PushButton button: buttonList)
-			
-			button.disable();
-		
-		
-		display.disable();
-		
-		panelEnabled = false;
-		
-
 	public void populateCodes(){	
-
 
 	}
 	
@@ -156,202 +125,194 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 	@Override
 	public void pressed(PushButton button) {
 		
-
-		if(panelEnabled) {
+//		System.out.println("button Pressed: " + buttonPressed(button));
 		
-			if(buttonPressed(button) == '+'){			
-	
-				if(!mode1 && !mode2 && !mode3 && !mode4){
+		if(buttonPressed(button) == '+'){			
+
+			if(!mode1 && !mode2 && !mode3 && !mode4){
+				
+				if(buttonField != null){
 					
-					if(buttonField != null){
+					
+					if(buttonField.charAt(0) == 'a')
 						
-						
-						if(buttonField.charAt(0) == 'a')
-							
-							enableConfigMode();
-						
-						
-						else{
-							
-							displayMessage("Invalid Command!");		
-							
-							resetButtonField();
-						}
-						
-					}
+						enableConfigMode();
+					
 					
 					else{
 						
-						displayMessage("Please enter a command!");
-
+						displayMessage("Invalid Command!");		
+						
+						resetButtonField();
 					}
 					
 				}
 				
+				else{
+					
+					displayMessage("Please enter a command!");
+				}
 				
-				else if (mode1 && !mode2 && !mode3 && !mode4){
+			}
+			
+			
+			else if (mode1 && !mode2 && !mode3 && !mode4){
+				
+				
+				if(buttonField != null){
 					
-					
-					if(buttonField != null){
+					try{
 						
-						try{
-							
-							popCanRackIndex = Integer.parseInt(buttonField);
-							
-							displayMessage("Rack number " + popCanRackIndex + " selected for configuration");
-							
-							mode2 = true;
-							
-							displayMessage("\nCurrent Name: " +  vm.getPopKindName(popCanRackIndex) + ", Enter new Name, or press ENTER to keep the same name: ");
-							
-							resetButtonField();
-							
-						}catch(Exception e){
-							
-							displayMessage("Invalid Command!");
-	
-							resetButtonField();
-							
-						}
+						popCanRackIndex = Integer.parseInt(buttonField);
 						
-					}
-					
-					else{
+						displayMessage("Rack number " + popCanRackIndex + " selected for configuration");
 						
-						displayMessage("Please enter a command!");
+						mode2 = true;
+						
+						displayMessage("\nCurrent Name: " +  vm.getPopKindName(popCanRackIndex) + ", Enter new Name, or press ENTER to keep the same name: ");
+						
+						resetButtonField();
+						
+					}catch(Exception e){
+						
+						displayMessage("Invalid Command!");
 
+						resetButtonField();
+						
 					}
 					
 				}
 				
-
-				
-				else if (mode1 && mode2 && !mode3 && !mode4){
+				else{
 					
-					if(buttonField != null){
+					displayMessage("Please enter a command!");
+				}
+				
+			}
+			
+			
+			else if (mode1 && mode2 && !mode3 && !mode4){
+				
+				if(buttonField != null){
+					
+					try{
 						
-						try{
+						if(buttonField != "")						
+							newRackName = buttonField;
+						
+						else
+							newRackName = vm.getPopKindName(popCanRackIndex);
+						
+						String message = "Name selected: " + newRackName;
+						
+						message += "\n\nCurrent Price: " +  vm.getPopKindCost(popCanRackIndex) + ", Enter new price: ";
+						
+						displayMessage(message);
+						
+						mode3 = true;
+						
+						resetButtonField();
+						
+
+						
+					}catch(Exception e){
+						
+						resetButtonField();
+						
+						displayMessage("Invalid Command!");					
+					}
+				}
+				else{
+					
+					displayMessage("Please enter a command!");
+					
+				}
+			}
+			
+			
+			else if (mode1 && mode2 && mode3 && !mode4){
+				
+				if(buttonField != null){
+					
+					try{
+						
+						newPrice = Integer.parseInt(buttonField);
+						
+						if(newPrice % 5 == 0) {
+						
+							String message = "Price selected: " + newPrice;
 							
-							if(buttonField != "")						
-								newRackName = buttonField;
+							message += "\n\nRack Selected: " + popCanRackIndex + "\nNew Name Selected: " + newRackName + "\nNew Price Selected: " + newPrice + "\n";
 							
-							else
-								newRackName = vm.getPopKindName(popCanRackIndex);
-							
-							String message = "Name selected: " + newRackName;
-							
-							message += "\n\nCurrent Price: " +  vm.getPopKindCost(popCanRackIndex) + ", Enter new price: ";
+							message += "\nDo you want to make these changes? Press y for YES, n for NO";
 							
 							displayMessage(message);
 							
-							mode3 = true;
+							mode4 = true;
 							
 							resetButtonField();
-							
-	
-							
-						}catch(Exception e){
-							
-							resetButtonField();
-							
-							displayMessage("Invalid Command!");					
 						}
-					}
-					else{
-						
-						displayMessage("Please enter a command!");
-						
-					}
-				}
-				
-				
-				else if (mode1 && mode2 && mode3 && !mode4){
-					
-					if(buttonField != null){
-						
-						try{
+						else {
 							
-							newPrice = Integer.parseInt(buttonField);
-							
-							if(newPrice % 5 == 0) {
-							
-								String message = "Price selected: " + newPrice;
-								
-								message += "\n\nRack Selected: " + popCanRackIndex + "\nName Selected: " + newRackName + "\nPrice Selected: " + newPrice + "\n";
-								
-								message += "\nDo you want to make these changes? Press y for YES, n for NO";
+								String message = "The lowest denomination accepted is 5 cents, please enter a different price,";
+						
+								message += "\n\nCurrent Price: " +  vm.getPopKindCost(popCanRackIndex) + ", Enter new price: ";
 								
 								displayMessage(message);
-								
-								mode4 = true;
-								
-								resetButtonField();
-							}
-							else {
-								
-									String message = "The lowest denomination accepted is 5 cents, please enter a different price,";
-							
-									message += "\n\nCurrent Price: " +  vm.getPopKindCost(popCanRackIndex) + ", Enter new price: ";
-									
-									displayMessage(message);
-							
-							}
-							
-						}catch(Exception e){
-							
-							resetButtonField();
-							
-							displayMessage("Invalid Command!");					
+						
 						}
+						
+					}catch(Exception e){
+						
+						resetButtonField();
+						
+						displayMessage("Invalid Command!");					
 					}
+				}
+				else{
+					
+					displayMessage("Please enter a command!");
+					
+				}
+			}
+			
+			else 
+				if(buttonField != null){
+					
+					if(buttonField.charAt(0) == 'y')
+						
+						saveChanges();
+					
 					else{
 						
-						displayMessage("Please enter a command!");
+						displayMessage("Discarding changes");
+						
+						displayMessage("Select pop can rack number: ");
+						
+						mode2 = false;
+						
+						mode3 = false;
 						
 					}
 				}
-				
-				else 
-					if(buttonField != null){
-						
-						if(buttonField.charAt(0) == 'y')
-							
-							saveChanges();
-						
-						else{
-							
-							displayMessage("Discarding changes");
-							
-							displayMessage("Select pop can rack number: ");
-							
-							mode2 = false;
-							
-							mode3 = false;
-							
-						}
-					}
-				
-					else{
-						
-						displayMessage("Please enter a command!");
-					}				
-			}
 			
-			
-			else if(buttonPressed(button) == '^') {
-				
-			}
-			
-			else {
-				buttonField += buttonPressed(button);
-	
-				System.out.println("buttonField: " + buttonField);
-		
-			}
+				else{
+					
+					displayMessage("Please enter a command!");
+				}				
 		}
-		else
+		
+		
+		else if(buttonPressed(button) == '^') {
 			
-			System.out.println("Safety must be on to access panel");
+		}
+		
+		else {
+			buttonField += buttonPressed(button);
+
+			System.out.println("buttonField: " + buttonField);
+	
+		}
 	}
 	
 	//This is for debugging 
@@ -443,6 +404,19 @@ public class ConfigPanel implements PushButtonListener, DisplayListener, LockLis
 		System.out.println(newMessage);
 
 		displayLog += newMessage;
+		
+	}
+
+
+	@Override
+	public void locked(Lock lock) {
+		//Lock listener <------ We need to implement lock
+		
+	}
+
+	@Override
+	public void unlocked(Lock lock) {
+		//Lock listener <------ We need to implement lock
 		
 	}
 }

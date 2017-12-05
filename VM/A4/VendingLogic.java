@@ -1,4 +1,4 @@
-package groupAssignment2;
+package A4;
 
 import org.lsmr.vending.*;
 import org.lsmr.vending.hardware.*;
@@ -22,14 +22,6 @@ public class VendingLogic implements VendingLogicInterface {
 	private VendingBTChardware tempBTChardware; //We create a temporary hardware piece in lue of the actual hardware.
 	
 	public boolean displayWelcome;
-	boolean configMode = false;
-	boolean mode1 = false;
-	boolean mode2 = false;
-	boolean enterButton = false;
-	private String selected = "";
-	private ArrayList<Integer> popCosts;
-	private int setPrice;
-	private int indexSelected = -1;
 	/**
 	*This constructor uses a vending machine as a parameter, then creates and assigns listeners to it.
 	*
@@ -45,13 +37,10 @@ public class VendingLogic implements VendingLogicInterface {
 		EL = new EventLog();
 		registerListeners();
 		
-		popCosts = new ArrayList<Integer>(vm.getNumberOfPopCanRacks());
-
 		if(enableBitCoin) {
 			tempBTChardware = BitCoinListener.tempCreateHardware();
 		}
 		
-
 		//Set up the custom configuration
 		circuitEnabled = new Boolean[vm.getNumberOfSelectionButtons()];
 		for (int i = 0; i < circuitEnabled.length; i++) {
@@ -661,7 +650,6 @@ public class VendingLogic implements VendingLogicInterface {
 	 */
 	public void determineButtonAction(PushButton button) {
 		boolean found = false;
-
 		
 		if(vm.isSafetyEnabled() == false) {
 			// search through the selection buttons to see if the parameter button is a selection button
@@ -672,42 +660,21 @@ public class VendingLogic implements VendingLogicInterface {
 				}
 			}
 		}
-//////////////////////////////// Start //////////////////////////////////////////////////////////////////////
-		if ((found == false) && (button == vm.getConfigurationPanel().getButton(0))){
-			configMode = true;
-			vm.getDisplay().display("Configuration mode!");
-			found = true;
-		}
-		
-		if((found == false) && (configMode == true) && (button == vm.getConfigurationPanel().getButton(1))){
-			mode1 = true;
-			vm.getDisplay().display("Select the rack number.");
-			found = true;
-		}
-		
-		if((found == false) && (configMode == true) && (mode1 == true) && (button == vm.getConfigurationPanel().getButton(2))){
-			mode2 = true;
-			vm.getDisplay().display("Choose the price.");
-			found = true;
-		}
-		
 		
 		// search through the configuration panel to see if the parameter button is part of these buttons
 		// NOTE!!! the configuration panel has a hard coded list of 37 buttons.  If this changes it could cause an error here!
-		for (int index = 3; (found == false) && (index < 37); index++) {
+		for (int index = 0; (found == false) && (index < 37); index++) {
 			if (vm.getConfigurationPanel().getButton(index) == button) {
 				// TODO figure out how to configure
-				configurationButtonAction(index);
-				
 				found = true;
 			}
 		}
 		
 		// check to see if the button is the configuration panels enter button.
 		if ((found == false) && (button == vm.getConfigurationPanel().getEnterButton())) {
-			enterButton = true;
-			configurationEnterAction();			
-			found = true;			
+			// TODO figure out how to configure
+			found = true;
+			
 		}
 		
 		if (found == false) {
@@ -715,93 +682,7 @@ public class VendingLogic implements VendingLogicInterface {
 		}
 			
 	}
-	// needs changes
-	private void configurationEnterAction() {
-		// TODO 
-		if ((mode1==true) && (mode2 == false)) {
-			if(selected != ""){
-				indexSelected = Integer.parseInt(selected);
-			}else{
-				vm.getDisplay().display("Select the rack number."); // does this need to change?
-				// changing mode to false or something?
-			}
-			
-			
-		} else if ((mode1 == true) && (mode2 == true)){
-			if(indexSelected >=0){
-				popCosts.set(indexSelected, setPrice); // what if the price didn't changed and hit enter?
-			}// else case for not selecting the rack number
-		}
-		
-	}
 
-	private void configurationButtonAction(int index) {
-		// TODO 
-		// selecting index buttons- all numbers
-		if ((index >=5) && (index <= 14)){
-			switch (index){
-			case(5):
-				selected += "1";
-				break;
-				
-			case(6):
-				selected += "2";
-				break;
-				
-			case(7):
-				selected += "3";
-				break;
-				
-			case(8):
-				selected += "4";
-				break;
-				
-			case(9):
-				selected += "5";
-				break;
-				
-			case(10):
-				selected += "6";
-				break;
-				
-			case(11):
-				selected += "7";
-				break;
-				
-			case(12):
-				selected += "8";
-				break;
-				
-			case(13):
-				selected += "9";
-				break;
-				
-			case(14):
-				selected += "0";
-				break;
-				
-			default:
-				selected += "";
-				break;
-			}
-			
-				
-		// down button			
-		} else if (index == 15){
-			// TODO not sure about the setPrice!!!
-			setPrice = popCosts.get(indexSelected);
-			if (setPrice >=105) {
-				setPrice -= 5;
-				
-				//selected = "";
-			}
-		// up button	
-		} else if (index == 16){ 
-			setPrice += 5;
-		} 
-		// delete button needs to be coded.
-	}
-//////////////////////////////////////////////////////////////// End ////////////////////////////////////////////////////////////
 	/**
 	 * Method to react to the press of a selection button
 	 * @param index - the index of the selection button that was pressed
