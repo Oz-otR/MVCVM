@@ -63,13 +63,14 @@ public class VendingLogic implements VendingLogicInterface {
 		
 	}
 	
+	
 	/**
 	 * Method handles bitcoin transactions, using the temporary hardware
 	 * @param none
 	 * @return none
 	 */
 	public void bitcoinTransaction() {
-		
+		//System.out.println("BTC transaction!");
 		if(verifyBTCuser(tempBTChardware.getUserID()))
 		{
 			if(tempBTChardware.getBTCpaymentMethods().contains(tempBTChardware.getPaymentType())) {
@@ -77,9 +78,23 @@ public class VendingLogic implements VendingLogicInterface {
 				//Replace this with proper BTC payment protocol
 				//For now just give it to them as credit.
 				//TODO impliment handling for charging the user.
-				
+				/* if(verifyBtUser(gui_view.getBTCUser())){
+				*		if(tempBTChardware.getBCT() >= convertCADtoBTC(selected.getPrice()))
+				*			{
+				*				tempBTChardware.chargeBTC(convertCADtoBTC(selected.getPrice()));
+				*				vm.getPopCanRack(index).dispensePopCan();
+				*				vm.getDisplay().display("Enjoy your drink!");
+				*				
+				*			}
+				*			else vm.getDisplay().display("You don't have enough Bitcoin, go back to mining!");
+				*	}
+				*	else vm.getDisplay().display("Username and Pin don't match");
+				*/
 			}
+			else vm.getDisplay().display("Invalid payment type.");
+				
 		}
+		else vm.getDisplay().display("Username and Pin don't match");
 		
 		
 		
