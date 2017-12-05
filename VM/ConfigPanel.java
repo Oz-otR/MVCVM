@@ -1,16 +1,14 @@
-package groupAssignment2;
-
-import java.util.ArrayList;
-
+package A4;
 import org.lsmr.vending.hardware.AbstractHardware;
 import org.lsmr.vending.hardware.AbstractHardwareListener;
 import org.lsmr.vending.hardware.Display;
 import org.lsmr.vending.hardware.DisplayListener;
+import org.lsmr.vending.hardware.Lock;
+import org.lsmr.vending.hardware.LockListener;
 import org.lsmr.vending.hardware.PushButton;
 import org.lsmr.vending.hardware.PushButtonListener;
 import org.lsmr.vending.hardware.VendingMachine;
-
-=======
+import java.util.ArrayList;
 
 /**
  * This is a logic class for configuration panel in a Vending Machine. 
@@ -34,21 +32,21 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	public PushButton[] buttonList;
 	public Display display;
 	
+	public boolean panelEnabled;
 
-	//TODO Is there better names for these flags other than "mode"?
-	public boolean mode1;// true when config is enabled?
-	public boolean mode2;// true when chosing a price?
-	public boolean mode3;// true when changing name?
-	public boolean mode4;// true when??
-
+	public boolean rackSelectMode;
+	public boolean nameSelectMode;
+	public boolean priceSelectMode;
+	public boolean saveChangesMode;
 	
 	public String buttonField;
 	public int popCanRackIndex;
 	public int newPrice;
-	public String displayMessage;
 
+	public String newRackName;
+	
+	public String displayMessage;
 	public String displayLog;
-	public String rackName;
 	
 	/**
 	 * Constructor to initialize vending machine and the configuration panel buttons. And registering listeners for 
@@ -56,105 +54,128 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	 * be disabled at first.
 	 * @param vmIn
 	 */
+	
 	public ConfigPanel(VendingMachine vmIn){
 		
-		buttonList = new PushButton[38];		
+		buttonList = new PushButton[38];
+
 		this.vm = vmIn;
 		
-		mode1=false;
-		mode2=false;
-		mode3=false;
-		mode4=false;
-		
+		resetButtonField();
+    
+    rackSelectMode=false;
+		nameSelectMode=false;
+		priceSelectMode=false;
 		buttonField = "";
-
-		for(int i = 0; i < 37; i++){
+		for(int i = 0; i < 37; i++)
 			buttonList[i] = vm.getConfigurationPanel().getButton(i);
-		}
 		
-		buttonList[37] = vm.getConfigurationPanel().getEnterButton();
-
+		buttonList[37] = vm.getConfigurationPanel().getEnterButton(); 
+		
 		display = vm.getConfigurationPanel().getDisplay();
 		
 		for(int i = 0; i < buttonList.length; i++)
 			buttonList[i].register(this);
-		
+
 		vm.getConfigurationPanel().getDisplay().register(this);
 	}
 	
+	public void enablePanel() {
+		
+		for (PushButton button: buttonList)
+			
+			button.enable();
+		
+		
+		display.enable();
+		
+		panelEnabled = true;
+		
+	}
+	
+	public void disablePanel() {
+		
+		for (PushButton button: buttonList)
+			
+			button.disable();
+		
+		
+		display.disable();
+		
+		panelEnabled = false;
+
+
+	}
+	
 	/**
-	 * Method to change the button pressed ASCII char index to its related number index.
+	 * Method to change the button pressed ASCII char index to its related number index, find and press it.
 	 * @param button
 	 */
-
+	
 	public void pressButton(char button){
 		
 		int buttonIndex = (int) button;
 
-
-		//System.out.println(buttonIndex);
-		
 		if(buttonIndex >= 97 && buttonIndex <= 122)		
 			buttonIndex -= 97;
 		
-		if(buttonIndex >= 48 && buttonIndex <=57)		
-
-			buttonIndex =- 22;
+		else if(buttonIndex >= 48 && buttonIndex <=57)		
+			buttonIndex -= 22;
 		
-		if(buttonIndex == 94)
+		else if(buttonIndex == 94)
 			buttonIndex = 36;
 		
-
-		if(buttonIndex == 43)
+		else if(buttonIndex == 43)
 			buttonIndex = 37;
-
-		System.out.println("button Index: " + buttonIndex);
 		
-		buttonList[buttonIndex].press();		
+		//System.out.println("Pressing button at index: " + buttonIndex );
+		
+		buttonList[buttonIndex].press();	
 	}
 	
-
 	/**
 	 * Method to change the button pressed index to its related ASCII character.
 	 * @param button, PushButton
 	 * @return buttonPushed, char
 	 */
 
+	
 	public char buttonPressed(PushButton button){
 		
 		int buttonIndex = 0;
 		
 		while(!button.equals(buttonList[buttonIndex]))
 			buttonIndex++;
+
 		if(buttonIndex >= 0 && buttonIndex <= 25)
 			buttonIndex += 97;
+		
 		else if(buttonIndex >= 26 && buttonIndex <= 35)
-
-		buttonIndex += 22;
-
+			buttonIndex += 22;
+		
 		else if(buttonIndex == 36)
 			buttonIndex = 94;
+
 		else if(buttonIndex == 37)
 			buttonIndex = 43;
 		
 		char buttonPushed = (char) buttonIndex;
 		
 		return buttonPushed;
+			
 	}
 	
 	@Override
 	public void enabled(AbstractHardware<? extends AbstractHardwareListener> hardware) {
-		// TODO Auto-generated method stub
-    //probably something to do with the lock
-
+			//hardware enable, no functionality here
 	}
 
 	@Override
 	public void disabled(AbstractHardware<? extends AbstractHardwareListener> hardware) {
-		// TODO Auto-generated method stub
-		//probably something to do with the lock
+		//hardware disable, no functionality here
 	}
-	
+
+
 	/**
 	 * Method to react to every button press.
 	 * All the changes should be made with pressing related button plus Enter. The only button that does not
@@ -162,132 +183,298 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	 * without enter will just save that character and append it to the string showing in the console of config panel,
 	 * by pressing Enter all the string that has been saved in console will be saved as its related area.  
 	 * @param button
-	 */
-	@Override
+	 */	
+
 	public void pressed(PushButton button) {
 		
-		if(buttonPressed(button) == '+'){			
-			
-			if(!mode1 && !mode2 && !mode3 && !mode4){
-				if(!buttonField.equals("")){
-					if(buttonField.charAt(0) == 'a'){
-						enableConfigMode();
+		if(panelEnabled) {
+		
+			if(buttonPressed(button) == '+'){			
+	
+				if(!rackSelectMode && !nameSelectMode && !priceSelectMode && !saveChangesMode){
+					
+					if(buttonField != null){
+						
+						
+						if(buttonField.charAt(0) == 'a')
+							
+							enableConfigMode();
+						
+						
+						else{
+							
+							displayMessage("Invalid Command!");		
+							
+							resetButtonField();
+						}
+						
 					}
 					
 					else{
-						buttonField = "";
-						displayMessage("Invalid Command!");
-					}
-				}
-				else{
-					displayMessage("Please enter a command!");
-				}			
-			}
-			
-			else if (mode1 && !mode2 && !mode3 && !mode4){
-				if(!buttonField.equals("")){
-					try{
-						popCanRackIndex = Integer.parseInt(buttonField);
-						mode2 = true;
-						displayMessage("Enter new Price: ");
-						buttonField = "";
 						
-					}catch(Exception e){
-						buttonField = "";
-						displayMessage("Invalid Command!");						
+						displayMessage("Please enter a command!");
 					}
+					
 				}
-				else{
-					displayMessage("Please enter a command!");
-				}
-			}
-			
-			else if (mode1 && mode2 && !mode3 && !mode4){
-				if(!buttonField.equals("")){
-					try{
-						newPrice = Integer.parseInt(buttonField);
-						String message = "Rack Selected: " + popCanRackIndex + "\nPrice Selected: " + newPrice;
-						message += "\nEnter Pop name: ";
-						displayMessage(message);
-						buttonField = "";
-						mode3 = true;
+				
+				
+				else if (rackSelectMode && !nameSelectMode && !priceSelectMode && !saveChangesMode){
+					
+					
+					if(buttonField != null){
 						
-					}catch(Exception e){
-						buttonField = "";
-
-						displayMessage("Invalid Command!");					
-					}
-				}
-				else{
-
-					displayMessage	("Please enter a command!");
-				}
-			}
-						
-			else if(mode1 && mode2 && mode3 && !mode4){
-				if(!buttonField.equals("")){
-				//	try{
-						rackName = buttonField;
-												
-			//		}catch(Exception e){
-						buttonField = ""; 
-						displayMessage("Invalid Command!");					
-					}
-			//	}
-				else{
-					rackName = vm.getPopKindName(popCanRackIndex);
-				}	
-				System.out.println(rackName);
-				String message = "Rack Name: " + rackName + "\nRack Selected: " + popCanRackIndex + "\nPrice Selected: " + newPrice;
-				message += "\n Do you want to make these changes? Press y for YES, n for NO";
-				displayMessage(message);
-				buttonField = "";
-				mode4 = true;
-			}
-			else{
-				if(!buttonField.equals("")){
-					if(buttonField.charAt(0) == 'y')
-						saveChanges();
-					else{
-						displayMessage("Discarding changes");
-						displayMessage("Select pop can rack number: ");
-						mode2 = false;
-						mode3 = false;
-						mode4 = false;
-
-					}
-				}
-				else{
-					displayMessage("Please enter a command!");
-				}
-			}
-		}
-		else if(buttonPressed(button) == '^') {
-			disableConfigMode();
-		}
-		else {
-			buttonField += buttonPressed(button);
-			System.out.println("buttonField: " + buttonField);
+						try{
+							
+							popCanRackIndex = Integer.parseInt(buttonField);
+							
+							displayMessage("Rack number " + popCanRackIndex + " selected for configuration");
+							
+							nameSelectMode = true;
+							
+							displayMessage("\nCurrent Name: " +  vm.getPopKindName(popCanRackIndex) + ", Enter new Name, or press ENTER to keep the same name: ");
+							
+							resetButtonField();
+							
+						}catch(Exception e){
+							
+							displayMessage("Invalid Command!");
 	
+							resetButtonField();
+							
+						}
+						
+					}
+					
+					else{
+						
+						displayMessage("Please enter a command!");
+					}
+					
+				}
+				
+				
+				else if (rackSelectMode && nameSelectMode && !priceSelectMode && !saveChangesMode){
+				
+					if(buttonField != null){
+						
+						try{
+							
+							if(buttonField != "")						
+								newRackName = buttonField;
+							
+							else
+								newRackName = vm.getPopKindName(popCanRackIndex);
+							
+							String message = "Name selected: " + newRackName;
+							
+							message += "\n\nCurrent Price: " +  vm.getPopKindCost(popCanRackIndex) + ", Enter new price: ";
+							
+							displayMessage(message);
+							
+							priceSelectMode = true;
+							
+							resetButtonField();
+							
+	
+							
+						}catch(Exception e){
+							
+							resetButtonField();
+							
+							displayMessage("Invalid Command!");					
+						}
+					}
+					else{
+						
+						displayMessage("Please enter a command!");
+						
+					}
+				}
+				
+				
+				else if (rackSelectMode && nameSelectMode && priceSelectMode && !saveChangesMode){
+					
+					if(buttonField != null){
+						
+						try{
+							
+							newPrice = Integer.parseInt(buttonField);
+							
+							if(newPrice % 5 == 0) {
+							
+								String message = "Price selected: " + newPrice;
+								
+								message += "\n\nRack Selected: " + popCanRackIndex + "\nName Selected: " + newRackName + "\nPrice Selected: " + newPrice + "\n";
+								
+								message += "\nDo you want to make these changes? Press y for YES, n for NO";
+								
+								displayMessage(message);
+								
+								saveChangesMode = true;
+								
+								resetButtonField();
+							}
+							else {
+								
+									String message = "The lowest denomination accepted is 5 cents, please enter a different price,";
+							
+									message += "\n\nCurrent Price: " +  vm.getPopKindCost(popCanRackIndex) + ", Enter new price: ";
+									
+									displayMessage(message);
+							
+							}
+
+							
+						}catch(Exception e){
+							
+							resetButtonField();
+							
+							displayMessage("Invalid Command!");					
+						}
+					}
+					else{
+						
+						displayMessage("Please enter a command!");
+						
+					}
+				}
+				
+				
+				else if (rackSelectMode && nameSelectMode && priceSelectMode && !saveChangesMode){
+					
+					if(buttonField != null){
+						
+						try{
+							
+							newPrice = Integer.parseInt(buttonField);
+							
+							if(newPrice % 5 == 0) {
+							
+								String message = "Price selected: " + newPrice;
+								
+								message += "\n\nRack Selected: " + popCanRackIndex + "\nName Selected: " + newRackName + "\nPrice Selected: " + newPrice + "\n";
+								
+								message += "\nDo you want to make these changes? Press y for YES, n for NO";
+								
+								displayMessage(message);
+								
+								saveChangesMode = true;
+								
+								resetButtonField();
+							}
+							else {
+								
+									String message = "The lowest denomination accepted is 5 cents, please enter a different price,";
+							
+									message += "\n\nCurrent Price: " +  vm.getPopKindCost(popCanRackIndex) + ", Enter new price: ";
+									
+									displayMessage(message);
+							
+							}
+							
+						}catch(Exception e){
+							
+							resetButtonField();
+							
+							displayMessage("Invalid Command!");					
+						}
+					}
+					else{
+						
+						displayMessage("Please enter a command!");
+						
+					}
+				}
+				
+				else 
+					if(buttonField != null){
+						
+						if(buttonField.charAt(0) == 'y')
+							
+							saveChanges();
+						
+						else{
+							
+							displayMessage("Discarding changes");
+							
+							displayMessage("Select pop can rack number: ");
+							
+							nameSelectMode = false;
+							
+							priceSelectMode = false;
+							
+						}
+					}
+				
+					else{
+						
+						displayMessage("Please enter a command!");
+					}				
+			}
+			
+			
+			else if(buttonPressed(button) == '^') {
+				
+				disableConfigMode();
+			}
+			
+			else {
+				buttonField += buttonPressed(button);
+	
+				System.out.println("buttonField: " + buttonField);
+		
+			}
 		}
+		else
+			
+			System.out.println("Safety must be on to access panel");
 	}
 	
 	//This is for debugging 
 	public void displayModes() {
 		
-		System.out.println("MODE1: " + mode1);
-		System.out.println("MODE2: " + mode2);
-		System.out.println("MODE3: " + mode3);
+		System.out.println("MODE1: " + rackSelectMode);
+
+		System.out.println("MODE2: " + nameSelectMode);
+		
+		System.out.println("MODE3: " + priceSelectMode);
+		
+		System.out.println("MODE4: " + saveChangesMode);
+	}
+	
+	/**
+	 * Resets buttonField
+	 */
+	public void resetButtonField() {
+		
+		this.buttonField = "";
+	}
+	
+	public void resetConfig() {
+		
+		rackSelectMode = false;
+		
+		nameSelectMode = false;
+		
+		priceSelectMode = false;
+		
+		saveChangesMode = false;
+		
+		resetButtonField();
 	}
 	
 	/**
 	 * Method to save all the changes has been made by technician to the vending machine, and disabling the config panel.
 	 */
+	
 	public void saveChanges(){
 		
-		ArrayList<Integer> popCanCosts = new ArrayList<Integer>();
-		ArrayList<String> popCanNames = new ArrayList<String>();		
+		displayMessage("Save changes? " + buttonField);
 		
+		ArrayList<Integer> popCanCosts = new ArrayList<Integer>();
+		
+		ArrayList<String> popCanNames = new ArrayList<String>();
+				
 		for(int i = 0; i < vm.getNumberOfPopCanRacks(); i++)
 			popCanCosts.add(vm.getPopKindCost(i));
 		
@@ -295,17 +482,17 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 			popCanNames.add(vm.getPopKindName(i));
 		
 		popCanCosts.set(popCanRackIndex, newPrice);
-<
-		popCanNames.set(popCanRackIndex, rackName);
+		
+		popCanNames.set(popCanRackIndex, newRackName);
 		
 		vm.configure(popCanNames,popCanCosts);
 		
-		System.out.println("Pop Names: "+ popCanNames.toString());
-		System.out.println("Pop Costs: "+ popCanCosts);
+		displayMessage("\nChanges Saved!");
 		
-		disableConfigMode();
+		resetConfig();
 		
 	}
+	
 	
 	/**
 	 * Method to display messages that every button press will initiate.
@@ -313,8 +500,8 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	 */
 	public void displayMessage(String inMessage){
 		
-	//	displayMessage += "\n" + inMessage;
-		displayMessage = inMessage;
+		displayMessage += "\n" + inMessage;
+		
 		display.display(displayMessage);
 	}
 	
@@ -322,41 +509,55 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	 * Method to enable the config mode, by setting mode1 to true
 	 */
 	public void enableConfigMode(){
-		displayMessage = "Config Mode Enabled!";
+
+		System.out.println("Config Mode Enabled");
+		
+		rackSelectMode=true;		
+		nameSelectMode=false;
+		
+		displayMessage = "\nSelect Pop Rack Number: ";
+		
 		display.display(displayMessage);
-		//System.out.println("Config Mode Enabled");
 		
-		mode1=true;
-		
-		displayMessage += "\nSelect Pop Rack Number";
-		display.display(displayMessage);
-		
-		buttonField = "";
-		displayModes();
-		
+		resetButtonField();
+		//displayModes();
 	}
 	
 	/**
 	 * Method to disable config mode by setting all the modes to false.
 	 */
 	public void disableConfigMode(){
-		mode1=false;
-		mode2=false;
-		mode3=false;
-		mode4=false;
+		
+		rackSelectMode = false;
+		
+		nameSelectMode = false;
+		
+		priceSelectMode = false;
+		
+		saveChangesMode = false;
+		
 		display.display("Configuration Mode is disabled, to enable press 'a' then Enter");
 		
 	}
-
+	
+	/**
+	 * Method to disable config mode by setting all the modes to false.
+	 * @param button, PushButton
+	 * @return buttonPushed, char
+	 */
 	public Display getDisplay() {
+		
 		return vm.getConfigurationPanel().getDisplay();
 	}
-	
-	@Override
+
+	/**
+	 * Display new message when it is changed, append to displayLog
+	 */
 	public void messageChange(Display display, String oldMessage, String newMessage) {
+
 		System.out.println(newMessage);
+
 		displayLog += newMessage;
 		
 	}
-
 }
