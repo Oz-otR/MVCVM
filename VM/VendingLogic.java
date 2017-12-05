@@ -15,6 +15,9 @@ public class VendingLogic implements VendingLogicInterface {
 	private Timer timer1;
 	private Timer timer2;
 	
+	private ConfigPanel configPanel;
+	private LockLogic lock;
+	
 	public boolean cardEnabled = true; //For enabling credit card purchases, on by default (NEW)
 	
 	private final double bitCoinExchangeRate = 12383.43;
@@ -51,7 +54,8 @@ public class VendingLogic implements VendingLogicInterface {
 		
 		popCosts = new ArrayList<Integer>(vm.getNumberOfPopCanRacks());
 
-		
+		configPanel = new ConfigPanel(vend); //instantiates config panel
+		lock = new Lock(vend, configPanel); //instantiates lock, DEFAULT is UNLOCKED, must LOCK to access config panel
 		
 
 		//Set up the custom configuration
