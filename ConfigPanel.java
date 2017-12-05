@@ -12,15 +12,16 @@ import java.util.ArrayList;
 
 
 
-public class ConfigPanel implements PushButtonListener, DisplayListener{
 
+public class ConfigPanel implements PushButtonListener, DisplayListener, LockListener{
 	
-	public VendingMachine vm;	
-	public String[] Codes;
-	public PushButton[] buttonList;
-	public Display display;
+public VendingMachine vm;	
+public String[] Codes;
+public PushButton[] buttonList;
+public Display display;
 	
 	public boolean panelEnabled;
+
 	public boolean mode1;
 	public boolean mode2;
 	public boolean mode3;
@@ -60,6 +61,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		vm.getConfigurationPanel().getDisplay().register(this);
 	}
 	
+
 	public void enablePanel() {
 		
 		for (PushButton button: buttonList)
@@ -83,8 +85,9 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		display.disable();
 		
 		panelEnabled = false;
-		
-	}
+
+	public void populateCodes(){	
+
 	
 	public void pressButton(char button){
 		
@@ -214,7 +217,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 				
 				
 				else if (mode1 && mode2 && !mode3 && !mode4){
-					
+				
 					if(buttonField != null){
 						
 						try{
@@ -236,6 +239,54 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 							resetButtonField();
 							
 	
+							
+						}catch(Exception e){
+							
+							resetButtonField();
+							
+							displayMessage("Invalid Command!");					
+						}
+					}
+					else{
+						
+						displayMessage("Please enter a command!");
+						
+					}
+				}
+				
+				
+				else if (mode1 && mode2 && mode3 && !mode4){
+					
+					if(buttonField != null){
+						
+						try{
+							
+							newPrice = Integer.parseInt(buttonField);
+							
+							if(newPrice % 5 == 0) {
+							
+								String message = "Price selected: " + newPrice;
+								
+								message += "\n\nRack Selected: " + popCanRackIndex + "\nName Selected: " + newRackName + "\nPrice Selected: " + newPrice + "\n";
+								
+								message += "\nDo you want to make these changes? Press y for YES, n for NO";
+								
+								displayMessage(message);
+								
+								mode4 = true;
+								
+								resetButtonField();
+							}
+							else {
+								
+									String message = "The lowest denomination accepted is 5 cents, please enter a different price,";
+							
+									message += "\n\nCurrent Price: " +  vm.getPopKindCost(popCanRackIndex) + ", Enter new price: ";
+									
+									displayMessage(message);
+							
+							}
+
 							
 						}catch(Exception e){
 							
@@ -432,5 +483,4 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		displayLog += newMessage;
 		
 	}
-
 }

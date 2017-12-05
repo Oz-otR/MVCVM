@@ -1,4 +1,4 @@
-
+package groupAssignment2;
 
 import java.util.ArrayList;
 
@@ -9,6 +9,8 @@ import org.lsmr.vending.hardware.DisplayListener;
 import org.lsmr.vending.hardware.PushButton;
 import org.lsmr.vending.hardware.PushButtonListener;
 import org.lsmr.vending.hardware.VendingMachine;
+
+=======
 
 /**
  * This is a logic class for configuration panel in a Vending Machine. 
@@ -24,6 +26,7 @@ import org.lsmr.vending.hardware.VendingMachine;
  * @author Zia Rehman, Mahsa Lotfi
  *
  */
+
 public class ConfigPanel implements PushButtonListener, DisplayListener{
 	
 	public VendingMachine vm;	
@@ -31,16 +34,19 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	public PushButton[] buttonList;
 	public Display display;
 	
+
 	//TODO Is there better names for these flags other than "mode"?
 	public boolean mode1;// true when config is enabled?
 	public boolean mode2;// true when chosing a price?
 	public boolean mode3;// true when changing name?
 	public boolean mode4;// true when??
+
 	
 	public String buttonField;
 	public int popCanRackIndex;
 	public int newPrice;
 	public String displayMessage;
+
 	public String displayLog;
 	public String rackName;
 	
@@ -61,12 +67,13 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		mode4=false;
 		
 		buttonField = "";
-		
+
 		for(int i = 0; i < 37; i++){
 			buttonList[i] = vm.getConfigurationPanel().getButton(i);
 		}
 		
 		buttonList[37] = vm.getConfigurationPanel().getEnterButton();
+
 		display = vm.getConfigurationPanel().getDisplay();
 		
 		for(int i = 0; i < buttonList.length; i++)
@@ -79,33 +86,40 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	 * Method to change the button pressed ASCII char index to its related number index.
 	 * @param button
 	 */
+
 	public void pressButton(char button){
 		
 		int buttonIndex = (int) button;
 
+
+		//System.out.println(buttonIndex);
 		
 		if(buttonIndex >= 97 && buttonIndex <= 122)		
 			buttonIndex -= 97;
 		
 		if(buttonIndex >= 48 && buttonIndex <=57)		
-			buttonIndex -= 22;
+
+			buttonIndex =- 22;
 		
 		if(buttonIndex == 94)
 			buttonIndex = 36;
 		
+
 		if(buttonIndex == 43)
 			buttonIndex = 37;
-		
+
 		System.out.println("button Index: " + buttonIndex);
 		
 		buttonList[buttonIndex].press();		
 	}
 	
+
 	/**
 	 * Method to change the button pressed index to its related ASCII character.
 	 * @param button, PushButton
 	 * @return buttonPushed, char
 	 */
+
 	public char buttonPressed(PushButton button){
 		
 		int buttonIndex = 0;
@@ -115,7 +129,9 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		if(buttonIndex >= 0 && buttonIndex <= 25)
 			buttonIndex += 97;
 		else if(buttonIndex >= 26 && buttonIndex <= 35)
-			buttonIndex += 22;		
+
+		buttonIndex += 22;
+
 		else if(buttonIndex == 36)
 			buttonIndex = 94;
 		else if(buttonIndex == 37)
@@ -123,13 +139,14 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		
 		char buttonPushed = (char) buttonIndex;
 		
-		return buttonPushed;			
+		return buttonPushed;
 	}
 	
 	@Override
 	public void enabled(AbstractHardware<? extends AbstractHardwareListener> hardware) {
 		// TODO Auto-generated method stub
-		//probably something to do with the lock
+    //probably something to do with the lock
+
 	}
 
 	@Override
@@ -197,10 +214,12 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 						
 					}catch(Exception e){
 						buttonField = "";
+
 						displayMessage("Invalid Command!");					
 					}
 				}
 				else{
+
 					displayMessage	("Please enter a command!");
 				}
 			}
@@ -235,6 +254,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 						mode2 = false;
 						mode3 = false;
 						mode4 = false;
+
 					}
 				}
 				else{
@@ -266,8 +286,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	public void saveChanges(){
 		
 		ArrayList<Integer> popCanCosts = new ArrayList<Integer>();
-		ArrayList<String> popCanNames = new ArrayList<String>();
-		
+		ArrayList<String> popCanNames = new ArrayList<String>();		
 		
 		for(int i = 0; i < vm.getNumberOfPopCanRacks(); i++)
 			popCanCosts.add(vm.getPopKindCost(i));
@@ -276,6 +295,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 			popCanNames.add(vm.getPopKindName(i));
 		
 		popCanCosts.set(popCanRackIndex, newPrice);
+<
 		popCanNames.set(popCanRackIndex, rackName);
 		
 		vm.configure(popCanNames,popCanCosts);
