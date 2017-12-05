@@ -12,7 +12,9 @@ import java.util.ArrayList;
 
 
 
-public class ConfigPanel implements PushButtonListener, DisplayListener{
+
+public class ConfigPanel implements PushButtonListener, DisplayListener, LockListener{
+
 
 	
 	public VendingMachine vm;	
@@ -21,6 +23,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	public Display display;
 	
 	public boolean panelEnabled;
+
 	public boolean mode1;
 	public boolean mode2;
 	public boolean mode3;
@@ -61,6 +64,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		vm.getConfigurationPanel().getDisplay().register(this);
 	}
 	
+
 	public void enablePanel() {
 		
 		for (PushButton button: buttonList)
@@ -85,6 +89,10 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		
 		panelEnabled = false;
 		
+
+	public void populateCodes(){	
+
+
 	}
 	
 	public void pressButton(char button){
@@ -148,6 +156,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 	@Override
 	public void pressed(PushButton button) {
 		
+
 		if(panelEnabled) {
 		
 			if(buttonPressed(button) == '+'){			
@@ -174,6 +183,7 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 					else{
 						
 						displayMessage("Please enter a command!");
+
 					}
 					
 				}
@@ -209,10 +219,12 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 					else{
 						
 						displayMessage("Please enter a command!");
+
 					}
 					
 				}
 				
+
 				
 				else if (mode1 && mode2 && !mode3 && !mode4){
 					
@@ -433,5 +445,4 @@ public class ConfigPanel implements PushButtonListener, DisplayListener{
 		displayLog += newMessage;
 		
 	}
-
 }

@@ -388,11 +388,6 @@ public class TestVendingLogic_Installed {
 		}
 		assertFalse(failed);
 	}
-	
-	
-	
-	
-	
-	
+
 	
 }

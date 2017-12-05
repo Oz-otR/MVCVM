@@ -14,6 +14,13 @@ public class VendingLogic implements VendingLogicInterface {
 	private String currentMessage ="";
 	private Timer timer1;
 	private Timer timer2;
+	
+	public boolean cardEnabled = true; //For enabling credit card purchases, on by default (NEW)
+	
+	private final double bitCoinExchangeRate = 12383.43;
+	private boolean enableBitCoin =false;
+	private VendingBTChardware tempBTChardware; //We create a temporary hardware piece in lue of the actual hardware.
+	
 	public boolean displayWelcome;
 	boolean configMode = false;
 	boolean mode1 = false;
@@ -39,6 +46,12 @@ public class VendingLogic implements VendingLogicInterface {
 		registerListeners();
 		
 		popCosts = new ArrayList<Integer>(vm.getNumberOfPopCanRacks());
+
+		if(enableBitCoin) {
+			tempBTChardware = BitCoinListener.tempCreateHardware();
+		}
+		
+
 		//Set up the custom configuration
 		circuitEnabled = new Boolean[vm.getNumberOfSelectionButtons()];
 		for (int i = 0; i < circuitEnabled.length; i++) {
@@ -48,6 +61,261 @@ public class VendingLogic implements VendingLogicInterface {
 		
 	}
 	
+	/**
+	 * Method handles bitcoin transactions, using the temporary hardware
+	 * @param none
+	 * @return none
+	 */
+	public void bitcoinTransaction() {
+		
+		if(verifyBTCuser(tempBTChardware.getUserID()))
+		{
+			if(tempBTChardware.getBTCpaymentMethods().contains(tempBTChardware.getPaymentType())) {
+				
+				//Replace this with proper BTC payment protocol
+				//For now just give it to them as credit.
+				//TODO impliment handling for charging the user.
+				
+			}
+		}
+		
+		
+		
+		
+	}
+	
+	private boolean verifyBTCuser(int userID) {
+		//When the bitcoin system is created, replace this method with the user verifcation protocoll.
+		return true;
+	}
+	
+	public double convertCADtoBTC(int cad)
+	{
+		if (cad< 0) throw new IllegalStateException("Unable to convert negative CAD values");
+		
+		double caddouble = cad/100;
+		return caddouble/ bitCoinExchangeRate;
+	}
+	
+	public int convertBTCtoCAD(double btc)
+	{
+		if(btc < 0) throw new IllegalStateException("Unable to convert negative bitcoin values");
+		int cad = (int) Math.floor(btc*bitCoinExchangeRate);	
+		return cad;
+	}
+	
+		/* RYAN, Added Methods for checking a card, and then processing payment. Handles if there is already coins in the machine
+	and if only paying by card. Gives out messages to the display for most of the errors */
+	public void checkPayByCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException //index is the index of the button pressed 
+	{
+		if(cardEnabled)
+		{
+			if(Card.getAcceptedBanks().contains(card.getBankName()))
+			{
+				if (!(card.getCardType() == "Invalid")) //check if the card is Credit or Debit 
+				{
+				//Then the bank type can be used in the vending machine system
+					if(card.getCardBalance() > 0) //if the balance is more than 0, then go to try to pay with the card 
+					{
+						vm.getDisplay().display("Paying with " + card.getBankName() + " " + card.getCardType() + " card");
+						payByCard(card, index); //message of what type of card they are paying with, then proceeds to pay with that card 
+					}
+				}
+			}
+			else {
+				vm.getDisplay().display("Card not valid");
+				this.purchasedByCard(false, card);
+			}
+		}
+		else
+		{
+			vm.getDisplay().display("Credit or debit cards are not accepted"); //if the cardEnabled is turned off 
+			this.purchasedByCard(false, card);
+		}
+	}
+	
+	public void payByCard(Card card, int index) throws DisabledException, EmptyException, CapacityExceededException
+	{
+		double price = (double) vm.getPopKindCost(index) / 100;
+		double funds = card.getCardBalance(); //total funds on that card 
+		double thisCredit = (double) credit / 100;
+		if (credit > 0) //if there are coins in the machine 
+		{
+			price = price - thisCredit; //subtracts the coins which are already in the machine from the price
+			System.out.println(funds);
+			System.out.println(price);
+			if (funds < price)
+			{
+				vm.getDisplay().display("Card has insufficient funds");
+				this.purchasedByCard(false, card);
+				price = price + thisCredit; //set the price back to normal 
+			}
+			else 
+			{
+				funds = funds - price; //subtract the price payed from the funds of the card 
+				card.setNewBalance(funds); //set new the balance of the card after purchase 
+				credit = 0;
+				vm.getPopCanRack(index).dispensePopCan();
+				this.purchasedByCard(true, card);
+			}
+		}
+		else //credit is 0, no coins are in the machine, pay only by card 
+		{
+			if (card.getCardBalance() >= price)
+			{
+				funds = funds - price;
+				card.setNewBalance(funds);
+				credit = 0;
+				vm.getPopCanRack(index).dispensePopCan();
+				this.purchasedByCard(true, card);
+			}
+			else{
+				vm.getDisplay().display("Card has insufficient funds");
+				this.purchasedByCard(false, card);
+			}		
+		}
+		
+		
+	}
+	/*END */
+
+	/*
+	 * Cynthia: Created new methods to: enable and disable card acceptor pay by
+	 * tapping, wiping and inserting card and return card
+	 */
+	private CardAcceptor cardAcceptor = new CardAcceptor(); // Notice: this card acceptor has not been installed into the vending machine.
+	private boolean purchaseSucceeded = false; // A flag announcing whether the purchase is successful or not. In case
+												// it'll be needed in the future.
+
+	/**
+	 * This method returns the vm field of the logic object
+	 * 
+	 * @param None
+	 * @return this.vm
+	 */
+	public VendingMachine getVm() {
+		return this.vm;
+	}
+	
+	/**
+	 * This method returns the purchaseSucceeded field of the logic object
+	 * 
+	 * @param None
+	 * @return this.purchaseSucceeded
+	 */
+	public boolean getPurchaseSucceeded() {
+		return this.purchaseSucceeded;
+	}
+	
+	/**
+	 * This method register the card acceptor in the hardware
+	 * 
+	 * @param None
+	 * @return void
+	 */
+	public void registerCardAcceptor(CardAcceptorListenerDevice listener) {
+		this.cardAcceptor.register(listener);
+	}
+
+	/**
+	 * This method enables the card acceptor
+	 * 
+	 * @param None
+	 * @return void
+	 */
+	public void enableCardAcceptor() {
+		this.cardEnabled = true;
+		vm.getDisplay().display("Card acceptor has been enabled.");
+		vm.getDisplay().display("Tap/Swipe/Insert");
+	}
+
+	/**
+	 * This method disables the card acceptor
+	 * 
+	 * @param None
+	 * @return void
+	 */
+	public void disableCardAcceptor() {
+		this.cardEnabled = false;
+		vm.getDisplay().display("Card acceptor has been disabled.");
+	}
+
+	/**
+	 * This method verifies if the purchase is successful
+	 * 
+	 * @param succeeded:
+	 *            indicating if the payment is successful card: the paying card
+	 * @return void
+	 */
+	public void purchasedByCard(boolean succeeded, Card card) throws DisabledException {
+		if (succeeded) {
+			this.purchaseSucceeded = true;
+		} else {
+			this.purchaseSucceeded = false;
+		}
+
+	}
+
+	/**
+	 * This method process paying by tapping cards
+	 * 
+	 * @param card:
+	 *            the paying card index: the index of the pop
+	 * @return void
+	 */
+	public void payByTappingCard(Card card, int index)
+			throws DisabledException, EmptyException, CapacityExceededException {
+		this.cardAcceptor.tapCard(card);
+		checkPayByCard(card, index);
+		if (this.purchaseSucceeded) {
+			vm.getDisplay().display("Approved.");
+		}
+		else {
+			vm.getDisplay().display("Payment failed. Try again.");
+		}
+	}
+
+	/**
+	 * This method process paying by wiping cards
+	 * 
+	 * @param card:
+	 *            the paying card index: the index of the pop
+	 * @return void
+	 */
+	public void payByWipingCard(Card card, int index)
+			throws DisabledException, EmptyException, CapacityExceededException {
+		this.cardAcceptor.wipeCard(card);
+		checkPayByCard(card, index);
+		if (this.purchaseSucceeded) {
+			vm.getDisplay().display("Approved.");
+		}
+		else {
+			vm.getDisplay().display("Payment failed. Try again.");
+		}
+	}
+
+	/**
+	 * This method process paying by inserting cards
+	 * 
+	 * @param card:
+	 *            the paying card index: the index of the pop
+	 * @return void
+	 */
+	public void payByInsertingCard(Card card, int index)
+			throws DisabledException, EmptyException, CapacityExceededException {
+		this.cardAcceptor.insertCard(card);
+		checkPayByCard(card, index);
+		if (this.purchaseSucceeded) {
+			vm.getDisplay().display("Approved. Remove card.");
+		}
+		else {
+			vm.getDisplay().display("Payment failed. Try again.");
+		}
+		this.cardAcceptor.returnCard(card);
+	}
+
+	/* END */
+		
 	/**
 	* This method returns the event logger
 	* @param None
@@ -83,8 +351,10 @@ public class VendingLogic implements VendingLogicInterface {
 		}
 		vm.getCoinReceptacle().register(new CoinReceptacleListenerDevice(this));
 		
-		//!!The current version of the vending machine is bugged. The coin return is never instantiated.!!
-		// This means we are unable to register to the coin return, as we get a null pointer.
+		if(enableBitCoin) {
+			tempBTChardware.register(new BitCoinListener(this));
+		}
+		
 		try {
 			vm.getCoinReturn().register(new CoinReturnListenerDevice(this));}
 		catch(Exception e)
@@ -181,24 +451,26 @@ public class VendingLogic implements VendingLogicInterface {
 	 * A method to display the price of the pop at a specific index 
 	 * @param index - the selection number that corresponds to the desired pop
 	 */
-	public void displayPrice(int index) {
-		try {
-			timer1.cancel();
-			timer2.cancel();
-		} catch (Exception e) {
-			// do nothing
+	
+
+		public void displayPrice(int index) {
+			try {
+				timer1.cancel();
+				timer2.cancel();
+			} catch (Exception e) {
+				// do nothing
+			}
+			vm.getDisplay().display("Price of " + vm.getPopKindName(index) + ": $" + (((double) vm.getPopKindCost(index)) / 100));
+			try {
+				if(!debug) Thread.sleep(5000);			// wait for 5 seconds
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			if (credit == 0)
+				welcomeMessageTimer();
+			else
+				this.displayCredit();
 		}
-		vm.getDisplay().display("Price of " + vm.getPopKindName(index) + ": $" + (((double) vm.getPopKindCost(index)) / 100));
-		try {
-			if(!debug) Thread.sleep(5000);			// wait for 5 seconds
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		if (credit == 0)
-			welcomeMessageTimer();
-		else
-			this.displayCredit();
-	}
 	
 	/**
 	 * Method to show that an invalid coin was inserted
@@ -658,7 +930,11 @@ public class VendingLogic implements VendingLogicInterface {
 	/**
 	 * Method returns the value in the circuitEnabled array at an index
 	 * @param int index, the index of the desired value
-	 * @return boolean circuitEnabled[index]
+	 * @retupublic void bitcoinTransaction() {
+		
+		
+		
+	}rn boolean circuitEnabled[index]
 	 */
 	public boolean getCircuitEnabledIndex(int index)
 	{
@@ -669,5 +945,7 @@ public class VendingLogic implements VendingLogicInterface {
 		else
 			return circuitEnabled[index];
 	}
+
+	
 	
 }
