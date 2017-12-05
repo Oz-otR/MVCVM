@@ -43,13 +43,15 @@ public class VendingLogic implements VendingLogicInterface {
 		this.vm = vend;
 		credit = 0;
 		EL = new EventLog();
+		
+		if(enableBitCoin) {
+			tempBTChardware = BitCoinListener.tempCreateHardware();
+		}
 		registerListeners();
 		
 		popCosts = new ArrayList<Integer>(vm.getNumberOfPopCanRacks());
 
-		if(enableBitCoin) {
-			tempBTChardware = BitCoinListener.tempCreateHardware();
-		}
+		
 		
 
 		//Set up the custom configuration
