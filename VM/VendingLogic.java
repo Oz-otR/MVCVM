@@ -54,8 +54,6 @@ public class VendingLogic implements VendingLogicInterface {
 		
 		popCosts = new ArrayList<Integer>(vm.getNumberOfPopCanRacks());
 
-		configPanel = new ConfigPanel(vend); //instantiates config panel
-		lock = new Lock(vend, configPanel); //instantiates lock, DEFAULT is UNLOCKED, must LOCK to access config panel
 		
 
 		//Set up the custom configuration
@@ -63,6 +61,11 @@ public class VendingLogic implements VendingLogicInterface {
 		for (int i = 0; i < circuitEnabled.length; i++) {
 			circuitEnabled[i] =true; //we enable all by default
 		}
+		
+		
+		configPanel = new ConfigPanel(vend); //instantiates config panel
+		lock = new Lock(vend, configPanel); //instantiates lock, DEFAULT is UNLOCKED, must LOCK to access config panel
+		
 		this.welcomeMessageTimer();
 		
 	}
