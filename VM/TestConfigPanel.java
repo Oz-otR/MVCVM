@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.lsmr.vending.hardware.VendingMachine;
 
-public class ConfigPanelTest {
+public class TestConfigPanel {
 	
 	private VendingMachine vm;
 	public ConfigPanel cp;
