@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 /**
  * Junit test class for ConfigPanel. 
- * (Not completed yet!)
+ * 
  * 
  * @author Mahsa Lotfi, Zia Rehman
  */
