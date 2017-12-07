@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 
 import org.lsmr.vending.hardware.AbstractHardwareListener;
 
@@ -21,7 +21,7 @@ public interface CardAcceptorListener extends AbstractHardwareListener {
 	 * @param card
 	 *            The card returned.
 	 */
-	public void validCardWiped(CardAcceptor cardAcceptor, Card card);
+	public void validCardSwiped(CardAcceptor cardAcceptor, Card card);
 
 	/**
 	 * An event announcing that the indicated card has been inserted.

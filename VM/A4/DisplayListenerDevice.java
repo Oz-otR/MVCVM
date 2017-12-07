@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 import org.lsmr.vending.hardware.AbstractHardware;
 import org.lsmr.vending.hardware.AbstractHardwareListener;
 import org.lsmr.vending.hardware.Display;
@@ -45,5 +45,6 @@ public class DisplayListenerDevice implements DisplayListener {
 	public void messageChange(Display display, String oldMessage, String newMessage) {
 		logic.getEventLog().writeToLog(newMessage);
 		logic.setCurrentMessage(newMessage);
+		//logic.setCurrentMessage(newMessage);
 	}
 }

@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 /**
  * Card class to work with the credit or debit cards 
  */
@@ -12,12 +12,10 @@ public class Card
 	private int cardType;
 	//The type of the cards are going to b 0 for a credit card, and 1 for a debit card 
 	
-	public Card(int type, String banks, double onCard)
+	public Card(int type, String bank, double onCard)
 	{
 		this.balance = onCard;
-		this.bank = banks;
-		if(type < 0 || type > 1)
-			throw new IllegalArgumentException("Wrong type of card, must be credit or debit");
+		this.bank = bank;
 		this.cardType = type;
 	}
 	

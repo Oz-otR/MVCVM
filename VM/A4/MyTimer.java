@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 import java.util.TimerTask;
 
 import org.lsmr.vending.hardware.VendingMachine;

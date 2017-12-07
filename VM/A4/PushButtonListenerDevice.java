@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 
 import org.lsmr.vending.hardware.PushButtonListener;
 import org.lsmr.vending.hardware.VendingMachine;

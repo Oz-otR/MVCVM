@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 
 import org.lsmr.vending.hardware.AbstractHardware;
 import org.lsmr.vending.hardware.AbstractHardwareListener;
@@ -42,8 +42,8 @@ public class CardAcceptorListenerDevice implements CardAcceptorListener {
 	}
 
 	@Override
-	public void validCardWiped(CardAcceptor cardAcceptor, Card card) {
-		logic.getVm().getDisplay().display("Card has been wiped.");
+	public void validCardSwiped(CardAcceptor cardAcceptor, Card card) {
+		logic.getVm().getDisplay().display("Card has been swiped.");
 		wipedCount++;
 	}
 

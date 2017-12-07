@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 
 import java.util.ArrayList;
 
@@ -19,9 +19,9 @@ public class VendingSetup {
 	
 	
 	//pop names, pop costs, to configure vending machine
-	private String [] pNames = {"Grape", "Root Beer", "Orange", "Cream Soda", "Coke", "Pepsi"};
-	private Integer [] pCosts = {200, 250, 100, 150, 300, 300};
-	public int [] capacEachRack = {10, 10, 10, 10, 10, 10};
+	private String [] pNames = {"Grape", "Fanta", "Orange", "Fresca", "Coke", "Pepsi", "Cola", "Soda"};
+	private Integer [] pCosts = {200, 250, 100, 150, 300, 300, 350, 50};
+	public int [] capacEachRack = {10, 10, 10, 10, 10, 10, 10, 10};
 	private ArrayList<String> popNames;
 	private ArrayList<Integer> popCosts;
 	
@@ -38,7 +38,7 @@ public class VendingSetup {
 	public VendingSetup() {
 			
 	//arbitrary values right now
-			ButtonCount = 6;
+			ButtonCount = 8;
 			coinRackCapacity = 100;
 			popCanRackCapacity = 10;
 			receptacleCapacity = 200;

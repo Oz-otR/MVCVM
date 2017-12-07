@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 
 import static org.junit.Assert.*;
 
@@ -13,6 +13,7 @@ public class TestVendingLogic_Installed {
 	private VendingMachine vm;
 	private VendingLogic logic;
 	private int [] validCoins;
+	private MyControlDialog C = new MyControlDialog();
 	
 	/**
 	 * Methid creates a vendingmachine, its logic, and a base setup class
@@ -21,7 +22,7 @@ public class TestVendingLogic_Installed {
 	{
 	VendingSetup vendset = new VendingSetup();
 	 vm = vendset.getVendingMachine();
-	 logic  = new VendingLogic(vm);
+	 logic  = new VendingLogic(vm, C);
 	 validCoins = vendset.getCoinKinds();
 	}
 	

@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 
 import org.lsmr.vending.hardware.AbstractHardware;
 import org.lsmr.vending.hardware.DisabledException;
@@ -35,7 +35,7 @@ public class CardAcceptor extends AbstractHardware<CardAcceptorListener> {
 	 * @throws DisabledException
 	 *             If the device is disabled.
 	 */
-	public void wipeCard(Card card) throws DisabledException {
+	public void swipeCard(Card card) throws DisabledException {
 		if(isDisabled())
 		    throw new DisabledException();
 		if(isValid(card)) {
@@ -94,7 +94,7 @@ public class CardAcceptor extends AbstractHardware<CardAcceptorListener> {
 
 	private void notifyValidCardWiped(Card card) {
 		for (CardAcceptorListener listener : listeners)
-			listener.validCardWiped(this, card);
+			listener.validCardSwiped(this, card);
 	}
 	
 	private void notifyValidCardInserted(Card card) {

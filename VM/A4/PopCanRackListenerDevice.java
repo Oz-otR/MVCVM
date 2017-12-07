@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 import org.lsmr.vending.PopCan;
 import org.lsmr.vending.hardware.AbstractHardware;
 import org.lsmr.vending.hardware.AbstractHardwareListener;

@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;

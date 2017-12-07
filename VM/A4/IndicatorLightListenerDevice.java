@@ -1,4 +1,4 @@
-package A4;
+package Assignment4;
 import org.lsmr.vending.hardware.*;
 
 public class IndicatorLightListenerDevice implements IndicatorLightListener{
