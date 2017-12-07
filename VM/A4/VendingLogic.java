@@ -19,7 +19,9 @@ public class VendingLogic implements VendingLogicInterface {
 
 	private ConfigPanel configPanel;
 	private LockLogic lock;
-
+	
+	//array list which keeps track of what coins have been inserted, for refunding them, is changed when a valid coin is inserted 
+	ArrayList<Integer> creditList = new ArrayList<>();
 	public boolean cardEnabled = true; // For enabling credit card purchases, on by default (NEW)
 
 	private final double bitCoinExchangeRate = 12383.43;
@@ -131,7 +133,32 @@ public class VendingLogic implements VendingLogicInterface {
 		int cad = (int) Math.floor(btc * bitCoinExchangeRate);
 		return cad;
 	}
-
+	
+	//New refund message
+	public void refundChange() throws CapacityExceededException, DisabledException
+	{
+		if (credit == 0)
+		{
+			//do nothing, no change put in to refund to the customer 
+		}
+		else
+		{
+			for (int i = 0; i < creditList.size(); i++)
+			{
+				if (vm.getCoinReturn().getCapacity() == vm.getCoinReturn().size())
+				{
+					//then the coinReturn is full and needs to be emptied before you can continue 
+					vm.getDisplay().display("Coin return is full, cannot refund change");
+				}
+				else //send the coin to the coin return 
+				{
+					vm.getCoinReturn().acceptCoin(new Coin(creditList.get(i)));
+				}
+			}
+			creditList.clear(); //clear what is in the machine list
+		}
+	}
+	
 	/*
 	 * RYAN, Added Methods for checking a card, and then processing payment. Handles
 	 * if there is already coins in the machine and if only paying by card. Gives
@@ -565,6 +592,7 @@ public class VendingLogic implements VendingLogicInterface {
 	 */
 	public void validCoinInserted(Coin coin) {
 		credit += coin.getValue();
+		creditList.add(coin.getValue()); //for keeping track of coins inserted for refund button 
 		try {
 			timer1.cancel();
 			timer2.cancel();
