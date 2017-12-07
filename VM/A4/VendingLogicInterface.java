@@ -3,7 +3,9 @@ package Assignment4;
 import org.lsmr.vending.Coin;
 import org.lsmr.vending.hardware.AbstractHardware;
 import org.lsmr.vending.hardware.AbstractHardwareListener;
-
+import org.lsmr.vending.hardware.CapacityExceededException;
+import org.lsmr.vending.hardware.DisabledException;
+import org.lsmr.vending.hardware.EmptyException;
 import org.lsmr.vending.hardware.PushButton;
 /**
  *Interface logic, makes it easier to test listener devices
@@ -63,8 +65,9 @@ public interface VendingLogicInterface {
 	
 	/**
 	 * A method to return change to the user
+	 *
 	 */
-	public void returnChange();
+	public void returnChange(int Change);
 	
 	/** 
 	 * A method to determine what action should be done when a button is pressed 

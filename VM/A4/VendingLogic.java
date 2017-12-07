@@ -2,6 +2,9 @@ package Assignment4;
 
 import org.lsmr.vending.*;
 import org.lsmr.vending.hardware.*;
+import org.lsmr.vending.hardware.CapacityExceededException;
+import org.lsmr.vending.hardware.DisabledException;
+import org.lsmr.vending.hardware.EmptyException;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -19,9 +22,7 @@ public class VendingLogic implements VendingLogicInterface {
 
 	private ConfigPanel configPanel;
 	private LockLogic lock;
-	
-	//array list which keeps track of what coins have been inserted, for refunding them, is changed when a valid coin is inserted 
-	ArrayList<Integer> creditList = new ArrayList<>();
+
 	public boolean cardEnabled = true; // For enabling credit card purchases, on by default (NEW)
 
 	private final double bitCoinExchangeRate = 12383.43;
@@ -73,8 +74,9 @@ public class VendingLogic implements VendingLogicInterface {
 		this.welcomeMessageTimer();
 		C.DisplayField.setText("hello");
 
-		this.lock = new LockLogic(vend, configPanel); // instantiates lock, DEFAULT is UNLOCKED, must LOCK to access config
-													// panel
+		this.lock = new LockLogic(vend, configPanel); // instantiates lock, DEFAULT is UNLOCKED, must LOCK to access
+														// config
+														// panel
 	}
 
 	/**
@@ -133,32 +135,7 @@ public class VendingLogic implements VendingLogicInterface {
 		int cad = (int) Math.floor(btc * bitCoinExchangeRate);
 		return cad;
 	}
-	
-	//New refund message
-	public void refundChange() throws CapacityExceededException, DisabledException
-	{
-		if (credit == 0)
-		{
-			//do nothing, no change put in to refund to the customer 
-		}
-		else
-		{
-			for (int i = 0; i < creditList.size(); i++)
-			{
-				if (vm.getCoinReturn().getCapacity() == vm.getCoinReturn().size())
-				{
-					//then the coinReturn is full and needs to be emptied before you can continue 
-					vm.getDisplay().display("Coin return is full, cannot refund change");
-				}
-				else //send the coin to the coin return 
-				{
-					vm.getCoinReturn().acceptCoin(new Coin(creditList.get(i)));
-				}
-			}
-			creditList.clear(); //clear what is in the machine list
-		}
-	}
-	
+
 	/*
 	 * RYAN, Added Methods for checking a card, and then processing payment. Handles
 	 * if there is already coins in the machine and if only paying by card. Gives
@@ -213,28 +190,26 @@ public class VendingLogic implements VendingLogicInterface {
 				this.purchasedByCard(false, card);
 				price = price + thisCredit; // set the price back to normal
 			} else {
-				try{
+				try {
 					credit = 0;
 					vm.getPopCanRack(index).dispensePopCan();
 					funds = funds - price; // subtract the price payed from the funds of the card
 					card.setNewBalance(funds); // set new the balance of the card after purchase
 					this.purchasedByCard(true, card);
-				}catch(Exception e)
-				{
+				} catch (Exception e) {
 					System.out.println(e);
 				}
 			}
 		} else // credit is 0, no coins are in the machine, pay only by card
 		{
-			if (card.getCardBalance() >= price) {			
-				try{
+			if (card.getCardBalance() >= price) {
+				try {
 					credit = 0;
 					vm.getPopCanRack(index).dispensePopCan();
 					funds = funds - price;
 					card.setNewBalance(funds);
 					this.purchasedByCard(true, card);
-				}catch(Exception e)
-				{
+				} catch (Exception e) {
 					System.out.println(e);
 				}
 			} else {
@@ -544,16 +519,11 @@ public class VendingLogic implements VendingLogicInterface {
 		C.DisplayField.setText(getCurrentMessage());
 		vm.getDisplay()
 				.display("Price of " + vm.getPopKindName(index) + ": $" + (((double) vm.getPopKindCost(index)) / 100));
-		try {
-			if (!debug)
-				Thread.sleep(5000); // wait for 5 seconds
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		if (credit == 0)
-			welcomeMessageTimer();
-		else
-			this.displayCredit();
+		/*
+		 * try { if (!debug) Thread.sleep(5000); // wait for 5 seconds } catch
+		 * (InterruptedException e) { e.printStackTrace(); } if (credit == 0)
+		 * welcomeMessageTimer(); else this.displayCredit();
+		 */
 	}
 
 	/**
@@ -592,7 +562,6 @@ public class VendingLogic implements VendingLogicInterface {
 	 */
 	public void validCoinInserted(Coin coin) {
 		credit += coin.getValue();
-		creditList.add(coin.getValue()); //for keeping track of coins inserted for refund button 
 		try {
 			timer1.cancel();
 			timer2.cancel();
@@ -644,38 +613,92 @@ public class VendingLogic implements VendingLogicInterface {
 	/**
 	 * A method to return change to the user
 	 */
-	public void returnChange() {
-		if (vm.getCoinReturn() != null) {
-			int[] coinKinds = getVmCoinKinds(); // vm.getCoinKindForCoinRack(0);// {200, 100, 25, 10, 5}; // legal value
-												// of Canadian coins. only types returned
-			for (int i = 0; i < coinKinds.length; i++) {
-				CoinRack rack = vm.getCoinRackForCoinKind(coinKinds[i]); // the coin rack for the coin value indicated
-																			// by the loop
-				if (rack != null) { // if rack = null. coin kind is not a valid change option
-					while ((!vm.isSafetyEnabled()) && (credit > coinKinds[i]) && (!rack.isDisabled())
-							&& (rack.size() > 0)) {
-						try {
-							rack.releaseCoin();
-							credit -= coinKinds[i]; // subtracting (i) cents from the credit
-						} catch (CapacityExceededException e) {
-							// should never happen, receptacle full should enable the safety, which is in
-							// the loop guard
-							e.printStackTrace();
-						} catch (EmptyException e) {
-							// should never happen, checked for in the loop guard
-							e.printStackTrace();
-						} catch (DisabledException e) {
-							// should never happen, checked for in the loop guard
-							e.printStackTrace();
-						}
-					}
-				}
+	public void returnChange(int CreditIn) {
+		int nickelTotal = vm.getCoinRackForCoinKind(5).size();
+		int dimeTotal = vm.getCoinRackForCoinKind(10).size();
+		int quarterTotal = vm.getCoinRackForCoinKind(25).size();
+		int loonieTotal = vm.getCoinRackForCoinKind(100).size();
+		int toonieTotal = vm.getCoinRackForCoinKind(200).size();
+		int changeRequired = credit;
+		System.out.println("inCR"+changeRequired + vm.getCoinRackForCoinKind(200).size());
+
+		while (changeRequired >= 200 && toonieTotal > 0) {
+			changeRequired -= 200;
+			toonieTotal--;
+			decrementTotal(200);
+			try {
+				vm.getCoinRackForCoinKind(200).releaseCoin();
+			} catch (CapacityExceededException | EmptyException | DisabledException e) {
+				System.out.println(e);
 			}
-		} else {
-			setCurrentMessage("Unable to return any change");
-			C.DisplayField.setText(getCurrentMessage());
-			vm.getDisplay().display("Unable to return any change");
 		}
+		System.out.println("Toon" + changeRequired);
+		while (changeRequired >= 100 && loonieTotal > 0) {
+			changeRequired -= 100;
+			loonieTotal--;
+			decrementTotal(100);
+			try {
+				vm.getCoinRackForCoinKind(100).releaseCoin();
+			} catch (CapacityExceededException | EmptyException | DisabledException e) {
+				System.out.println(e);
+			}		
+		}
+		System.out.println("Loon" + changeRequired);
+		while (changeRequired >= 25 && quarterTotal > 0) {
+			changeRequired -= 25;
+			quarterTotal--;
+			decrementTotal(25);
+			try {
+				vm.getCoinRackForCoinKind(25).releaseCoin();
+			} catch (CapacityExceededException | EmptyException | DisabledException e) {
+				System.out.println(e);
+			}
+		}
+		while (changeRequired >= 10 && dimeTotal > 0) {
+			changeRequired -= 10;
+			dimeTotal--;
+			decrementTotal(10);
+			try {
+				vm.getCoinRackForCoinKind(10).releaseCoin();
+			} catch (CapacityExceededException | EmptyException | DisabledException e) {
+				System.out.println(e);
+			}
+		}
+		while (changeRequired >= 5 && nickelTotal > 0) {
+			changeRequired -= 5;
+			nickelTotal--;
+			decrementTotal(5);
+			try {
+				vm.getCoinRackForCoinKind(5).releaseCoin();
+			} catch (CapacityExceededException | EmptyException | DisabledException e) {
+				System.out.println(e);
+			}
+		}
+
+		System.out.println("The Fuck");
+
+		/*
+		 * if (vm.getCoinReturn() != null) { int[] coinKinds = getVmCoinKinds(); //
+		 * vm.getCoinKindForCoinRack(0);// {200, 100, 25, 10, 5}; // legal value // of
+		 * Canadian coins. only types returned for (int i = 0; i < coinKinds.length;
+		 * i++) { CoinRack rack = vm.getCoinRackForCoinKind(coinKinds[i]); // the coin
+		 * rack for the coin value indicated // by the loop if (rack != null) { // if
+		 * rack = null. coin kind is not a valid change option while
+		 * ((!vm.isSafetyEnabled()) && (credit > coinKinds[i]) && (!rack.isDisabled())
+		 * && (rack.size() > 0)) { System.out.println("Didnt do shit got here"); try {
+		 * 
+		 * rack.releaseCoin(); credit -= coinKinds[i]; // subtracting (i) cents from the
+		 * credit } catch (CapacityExceededException e) { // should never happen,
+		 * receptacle full should enable the safety, which is in // the loop guard
+		 * e.printStackTrace(); } catch (EmptyException e) { // should never happen,
+		 * checked for in the loop guard e.printStackTrace(); } catch (DisabledException
+		 * e) { // should never happen, checked for in the loop guard
+		 * e.printStackTrace(); } } } } } else {
+		 * System.out.println("Didnt do shit got here");
+		 * setCurrentMessage("Unable to return any change");
+		 * C.DisplayField.setText(getCurrentMessage());
+		 * vm.getDisplay().display("Unable to return any change"); }
+		 */
 
 		if (!isExactChangePossible()) {
 			C.Cash.setText("ECO Light On");
@@ -684,6 +707,16 @@ public class VendingLogic implements VendingLogicInterface {
 			vm.getExactChangeLight().deactivate();
 			C.Cash.setText("ECO Light Off");
 		}
+	}
+
+	public void decrementTotal(int price) throws SimulationException {
+		System.out.println(credit+"indec");
+		if (credit >= price) {
+			credit -= price;
+			System.out.println(credit);
+			displayCredit();
+		} else
+			throw new SimulationException("Decrement cannot result in total being a negative value");
 	}
 
 	/**
@@ -782,7 +815,8 @@ public class VendingLogic implements VendingLogicInterface {
 			}
 		}
 	}
-		/**
+
+	/**
 	 * Method to react to the press of a selection button
 	 * 
 	 * @param index
@@ -794,20 +828,15 @@ public class VendingLogic implements VendingLogicInterface {
 				vm.getPopCanRack(index).dispensePopCan();
 				this.dispensingMessage();
 				credit -= vm.getPopKindCost(index); // deduct the price of the pop
-				returnChange();
+				System.out.println("Before CR");
+				returnChange(credit); // this doesnt do fuck all
+				System.out.println("After CR" + credit);
 				if (credit == 0)
 					this.welcomeMessageTimer(); // begin cycling the welcome message again
 				else
 					this.displayCredit();
-			} catch (DisabledException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (EmptyException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (CapacityExceededException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (Exception e) {
+				System.out.println(e);
 			}
 		} else if (circuitEnabled[index] != true) {
 			setCurrentMessage("Option Unavailable");
@@ -815,7 +844,7 @@ public class VendingLogic implements VendingLogicInterface {
 			vm.getDisplay().display("Option unavailable");
 		} else {
 			this.displayPrice(index);
-			this.displayCredit();
+			// this.displayCredit();
 		}
 	}
 
@@ -879,8 +908,11 @@ public class VendingLogic implements VendingLogicInterface {
 		} else {
 			C.Card.setText("OOO Light On");
 			vm.getOutOfOrderLight().activate();
-
-			returnChange();
+			try {
+				returnChange(credit);
+			} catch (Exception e) {
+				System.out.println(e);
+			}
 			vendOutOfOrder();
 			// vm.enableSafety(); NOTE: calling enableSafety() will result in a stack
 			// overflow exception

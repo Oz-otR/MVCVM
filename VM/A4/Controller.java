@@ -57,6 +57,7 @@ public class Controller {
 		VM = vs.getVendingMachine();
 		logic = new VendingLogic(VM, Control);
 		cp = new ConfigPanel(VM);
+		
 
 		Config.DisplayField.setText(cp.displayMessage);
 		Control.DisplayField.setText(cp.displayMessage);
@@ -143,9 +144,8 @@ public class Controller {
 							try {
 								logic.payByTappingCard(card, selection);
 								System.out.println(card.getBankName() + card.getCardType() + card.getCardBalance());
-								System.out.println(VM.getDeliveryChute().size());
+								System.out.println(VM.getDeliveryChute().size());							
 							} catch (DisabledException | EmptyException | CapacityExceededException e1) {
-
 								System.out.println("Unavailable, Sorry");
 								System.out.println(selection);
 								System.out.println(card.getBankName() + card.getCardType() + card.getCardBalance());
@@ -153,7 +153,7 @@ public class Controller {
 								e1.printStackTrace();
 							}
 						} else {
-							Control.DisplayField.setText("Nope");
+							Control.DisplayField.setText("No Drink Selected");
 						}
 
 					default:
@@ -172,8 +172,9 @@ public class Controller {
 			JButton aButton = (JButton) e.getSource();
 			if (isNumeric(aButton.getName())) {
 				selection = Integer.valueOf(aButton.getName());
-				System.out.println(selection);
+				System.out.println("pop sleceted "+selection);
 				VM.getSelectionButton(selection).press();
+				//System.out.println("After clicking a Pop"+VM.getDeliveryChute().size());
 			} else {
 				String Text = aButton.getText();
 
@@ -197,17 +198,18 @@ public class Controller {
 
 						break;
 					case "Refund":
-						logic.returnChange();
+						//logic.returnChange();
 						break;
 					case "Delivery Chute":
-						if (VM.getDeliveryChute().size() == 0)
+						if (VM.getDeliveryChute().size() == 0) 
 							theView.getChute().setToolTipText("Empty");
+							//theView.getChute().setBackground(Color.BLACK);
+							//theView.getChute().setEnabled(false);}
 						else {
 							VM.getDeliveryChute().removeItems();
-							System.out.println(VM.getDeliveryChute().size());
+							System.out.println("In GUI"+VM.getDeliveryChute().size());
 							theView.getChute().setToolTipText("Empty");
 						}
-						System.out.println(VM.getDeliveryChute().size());
 						theView.getChute().setBackground(Color.BLACK);
 						// System.out.println("got here");
 						break;

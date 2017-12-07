@@ -22,6 +22,7 @@ public class VendingSetup {
 	private String [] pNames = {"Grape", "Fanta", "Orange", "Fresca", "Coke", "Pepsi", "Cola", "Soda"};
 	private Integer [] pCosts = {200, 250, 100, 150, 300, 300, 350, 50};
 	public int [] capacEachRack = {10, 10, 10, 10, 10, 10, 10, 10};
+	public int [] CoinsCount = {10, 10, 10, 10, 10};
 	private ArrayList<String> popNames;
 	private ArrayList<Integer> popCosts;
 	
@@ -63,6 +64,7 @@ public class VendingSetup {
 		myVM.configure(popNames, popCosts);
 		//load PopCans into the PopCanRacks up to their maximum capacity for the rack
 		myVM.loadPopCans(capacEachRack);
+		myVM.loadCoins(CoinsCount);
 	}
 	
 	
