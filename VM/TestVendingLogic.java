@@ -691,6 +691,61 @@ public class TestVendingLogic {
 
 	/* Done */
 	
+		/**
+	 * Testing the refunding of change to the customer over multiple transactions 
+	 * @throws DisabledException
+	 * @throws CapacityExceededException
+	 */
+	@Test 
+	public void test_refundChange() throws DisabledException, CapacityExceededException
+	{
+		setup();
+		vm.getCoinSlot().addCoin(new Coin(200));
+		vm.getCoinSlot().addCoin(new Coin(25));
+		assertEquals(vm.getCoinReturn().size(), 0);
+		logic.refundChange();
+		assertEquals(vm.getCoinReturn().size(), 2); //returned two coins 
+		
+		vm.getCoinSlot().addCoin(new Coin(5));
+		vm.getCoinSlot().addCoin(new Coin(25));
+		vm.getCoinSlot().addCoin(new Coin(10));
+		logic.refundChange();
+		assertEquals(vm.getCoinReturn().size(), 5); //size of the coin return adds up from previous turns 
+	}
+	
+	/**
+	 * Test which fills the coin return up and makes sure it does not dispense more, diplay message on display 
+	 * @throws CapacityExceededException
+	 * @throws DisabledException
+	 */
+	@Test
+	public void test_fullRefundChange() throws CapacityExceededException, DisabledException
+	{
+		setup();
+		for (int i = 0; i < 50; i++)
+		{
+			vm.getCoinReturn().acceptCoin(new Coin(25));
+		}
+		
+		vm.getCoinSlot().addCoin(new Coin(5));
+		logic.refundChange();
+		assertTrue(compareCurrentMessage("Coin return is full, cannot refund change"));
+	}
+	
+	/**
+	 * Test which tests the case where the refund button is pressed and the are no coins in the machine to refund 
+	 * @throws CapacityExceededException
+	 * @throws DisabledException
+	 */
+	@Test
+	public void test_noCreditToRefund() throws CapacityExceededException, DisabledException
+	{
+		setup();
+		logic.refundChange();
+		assertEquals(logic.getCurrencyValue(), 0);
+		assertEquals(logic.creditList.size(), 0);
+		assertEquals(vm.getCoinReturn().size(), 0);
+	}
 	
 	
 	
