@@ -14,6 +14,7 @@ public class VendingLogic implements VendingLogicInterface {
 	private String currentMessage ="";
 	private Timer timer1;
 	private Timer timer2;
+	private GuiController gui;//gui only, all other uses of the gui are tagged "//gui only", change or remove as needed
 	
 	private ConfigPanel configPanel;
 	private LockLogic lock;
@@ -44,6 +45,7 @@ public class VendingLogic implements VendingLogicInterface {
 	{
 		//Set up attributes
 		this.vm = vend;
+		this.gui = new GuiController(vend, this);//gui only
 		credit = 0;
 		EL = new EventLog();
 		
@@ -142,18 +144,21 @@ public class VendingLogic implements VendingLogicInterface {
 					if(card.getCardBalance() > 0) //if the balance is more than 0, then go to try to pay with the card 
 					{
 						vm.getDisplay().display("Paying with " + card.getBankName() + " " + card.getCardType() + " card");
+						gui.updateDisplay("Paying with " + card.getBankName() + " " + card.getCardType() + " card");//gui only
 						payByCard(card, index); //message of what type of card they are paying with, then proceeds to pay with that card 
 					}
 				}
 			}
 			else {
 				vm.getDisplay().display("Card not valid");
+				gui.updateDisplay("Card not valid");//gui only
 				this.purchasedByCard(false, card);
 			}
 		}
 		else
 		{
 			vm.getDisplay().display("Credit or debit cards are not accepted"); //if the cardEnabled is turned off 
+			gui.updateDisplay("Credit or debit cards are not accepted");//gui only
 			this.purchasedByCard(false, card);
 		}
 	}
@@ -171,6 +176,7 @@ public class VendingLogic implements VendingLogicInterface {
 			if (funds < price)
 			{
 				vm.getDisplay().display("Card has insufficient funds");
+				gui.updateDisplay("Card has insufficent funds");//gui only
 				this.purchasedByCard(false, card);
 				price = price + thisCredit; //set the price back to normal 
 			}
@@ -195,6 +201,7 @@ public class VendingLogic implements VendingLogicInterface {
 			}
 			else{
 				vm.getDisplay().display("Card has insufficient funds");
+				gui.updateDisplay("Card has insufficent funds");//gui only
 				this.purchasedByCard(false, card);
 			}		
 		}
@@ -251,6 +258,7 @@ public class VendingLogic implements VendingLogicInterface {
 		this.cardEnabled = true;
 		vm.getDisplay().display("Card acceptor has been enabled.");
 		vm.getDisplay().display("Tap/Swipe/Insert");
+		gui.updateDisplay("Tap/Swipe/Insert");//gui only
 	}
 
 	/**
@@ -262,6 +270,7 @@ public class VendingLogic implements VendingLogicInterface {
 	public void disableCardAcceptor() {
 		this.cardEnabled = false;
 		vm.getDisplay().display("Card acceptor has been disabled.");
+		gui.updateDisplay("Card acceptor has been disabled");//gui only
 	}
 
 	/**
@@ -293,9 +302,11 @@ public class VendingLogic implements VendingLogicInterface {
 		checkPayByCard(card, index);
 		if (this.purchaseSucceeded) {
 			vm.getDisplay().display("Approved.");
+			gui.updateDisplay("Approved");//gui only
 		}
 		else {
 			vm.getDisplay().display("Payment failed. Try again.");
+			gui.updateDisplay("Payment failed. Try again.");//gui only
 		}
 	}
 
@@ -312,9 +323,11 @@ public class VendingLogic implements VendingLogicInterface {
 		checkPayByCard(card, index);
 		if (this.purchaseSucceeded) {
 			vm.getDisplay().display("Approved.");
+			gui.updateDisplay("Approved");//gui only
 		}
 		else {
 			vm.getDisplay().display("Payment failed. Try again.");
+			gui.updateDisplay("Payment failed. Try again.");//gui only
 		}
 	}
 
@@ -331,9 +344,11 @@ public class VendingLogic implements VendingLogicInterface {
 		checkPayByCard(card, index);
 		if (this.purchaseSucceeded) {
 			vm.getDisplay().display("Approved. Remove card.");
+			gui.updateDisplay("Approved. Remove card");//gui only
 		}
 		else {
 			vm.getDisplay().display("Payment failed. Try again.");
+			gui.updateDisplay("Payment failed. Try again.");//gui only
 		}
 		this.cardAcceptor.returnCard(card);
 	}
@@ -436,6 +451,7 @@ public class VendingLogic implements VendingLogicInterface {
 	 */
 	public void welcomeMessage() {
 		vm.getDisplay().display("Hi There!");
+		gui.updateDisplay("Hi There!");//gui only
 	}
 	
 	/**
@@ -443,6 +459,7 @@ public class VendingLogic implements VendingLogicInterface {
 	 */
 	public void clearDisplayMessage() {
 		vm.getDisplay().display("");
+		gui.updateDisplay("");//gui only
 	}
 	
 	/**
@@ -456,6 +473,7 @@ public class VendingLogic implements VendingLogicInterface {
 			// do nothing
 		}
 		vm.getDisplay().display("Out Of Order");
+		gui.updateDisplay("Out of Order");//gui only
 	}
 	
 	/**
@@ -469,6 +487,7 @@ public class VendingLogic implements VendingLogicInterface {
 			// do nothing
 		}
 		vm.getDisplay().display("Current Credit: $" + (((double) credit)/100));
+		gui.updateDisplay("Current Credit: $" + (((double) credit)/100));//gui only
 	}
 	
 	/**
@@ -485,6 +504,7 @@ public class VendingLogic implements VendingLogicInterface {
 				// do nothing
 			}
 			vm.getDisplay().display("Price of " + vm.getPopKindName(index) + ": $" + (((double) vm.getPopKindCost(index)) / 100));
+			gui.updateDisplay("Price of " + vm.getPopKindName(index) + ": $" + (((double) vm.getPopKindCost(index)) / 100));//gui only
 			try {
 				if(!debug) Thread.sleep(5000);			// wait for 5 seconds
 			} catch (InterruptedException e) {
@@ -508,6 +528,7 @@ public class VendingLogic implements VendingLogicInterface {
 			// do nothing
 		}
 		vm.getDisplay().display("Invalid coin!");
+		gui.updateDisplay("Invalid coin!");//gui only
 		try {
 			if(!debug) Thread.sleep(5000);			// wait for 5 seconds
 		} catch (InterruptedException e) {
@@ -533,10 +554,13 @@ public class VendingLogic implements VendingLogicInterface {
 			// do nothing
 		}
 		//Light the exact change light based on attempted change output
-		if (!isExactChangePossible())
+		if (!isExactChangePossible()) {
 			vm.getExactChangeLight().activate();
+			gui.updateECOL("eco on");//gui only
+		}
 		else 
 			vm.getExactChangeLight().deactivate();
+			gui.updateECOL("eco off");//gui only
 		
 		this.displayCredit();
 	}
@@ -546,6 +570,7 @@ public class VendingLogic implements VendingLogicInterface {
 	 */
 	public void dispensingMessage() {
 		vm.getDisplay().display("Despensing. Enjoy!");
+		gui.updateDisplay("Despensing. Enjoy!");//gui only
 	}
 	
 	/**
@@ -579,6 +604,7 @@ public class VendingLogic implements VendingLogicInterface {
 						try {
 							rack.releaseCoin();
 							credit -= coinKinds[i];			// subtracting (i) cents from the credit
+							gui.updateCoinReturn(coinKinds[i]);//gui only
 						} catch (CapacityExceededException e) {
 							// should never happen, receptacle full should enable the safety, which is in the loop guard
 							e.printStackTrace();
@@ -595,11 +621,15 @@ public class VendingLogic implements VendingLogicInterface {
 		}
 		else
 			vm.getDisplay().display("Unable to return any changed");
+			gui.updateDisplay("Unable to return any changed");//gui only
 		
-		if (!isExactChangePossible())
+		if (!isExactChangePossible()) {
 			vm.getExactChangeLight().activate();
+			gui.updateECOL("eco on");//gui only
+		}
 		else 
 			vm.getExactChangeLight().deactivate();
+			gui.updateECOL("eco off");//gui only
 	}
 	
 	
@@ -834,6 +864,7 @@ public class VendingLogic implements VendingLogicInterface {
 		if ((vm.getPopKindCost(index) <= credit) && (circuitEnabled[index] == true)) {
 			try {
 				vm.getPopCanRack(index).dispensePopCan();
+				gui.updatePopOut("Pop " + Integer.toString(index+1) + " dispensed");//gui only
 				this.dispensingMessage();
 				credit -= vm.getPopKindCost(index);		// deduct the price of the pop
 				returnChange();
@@ -854,6 +885,7 @@ public class VendingLogic implements VendingLogicInterface {
 		}
 		else if (circuitEnabled[index] != true) {
 			vm.getDisplay().display("Option unavailable");
+			gui.updateDisplay("Option unavailable");//gui only
 		}
 		else {
 			this.displayPrice(index);
@@ -919,6 +951,7 @@ public class VendingLogic implements VendingLogicInterface {
 		}
 		else {
 			vm.getOutOfOrderLight().activate();
+			gui.updateOOOL("ooo on");//gui only
 			
 			returnChange();
 			vendOutOfOrder();
@@ -946,6 +979,7 @@ public class VendingLogic implements VendingLogicInterface {
 		}
 		else {
 			vm.getOutOfOrderLight().deactivate();
+			gui.updateOOOL("ooo off");//gui only
 			//vm.disableSafety(); NOTE: This may result in a stack overflow exception
 			
 		}
